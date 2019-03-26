@@ -6,3 +6,9 @@ bin
 
 # maven
 target
+
+# compression
+.tar
+.gz
+.zip
+.jar
