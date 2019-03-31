@@ -6,9 +6,11 @@ package lrpc.common.protocol;
  */
 public class RpcMessage {
 	
-	public static final byte TYPE_INVOKE = 1;
+	public static final byte TYPE_INVOKE_REQUEST = 1;
 	public static final byte TYPE_INVOKE_RESPONSE = -1;
-	public static final byte TYPE_HEARTBEAT = 2;
+	public static final byte TYPE_HEARTBEAT_REQUEST = 2;
+	public static final byte TYPE_HEARTBEAT_RESPONSE = -2;
+	
 	
 	private byte type;
 	private long id;
@@ -46,4 +48,5 @@ public class RpcMessage {
 	public void setData(Object data) {
 		this.data = data;
 	}
+	
 }

@@ -1,7 +1,6 @@
 package lrpc.common;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,25 +14,27 @@ public class Invocation implements Serializable {
 
     private static final long serialVersionUID = -806213717009304249L;
 
+    private String className;
+    
     private String methodName;
 	
     private Class<?>[] parameterTypes;
 
     private Object[] paremeters;
+    
+    private boolean needReply = true;
 
     private Map<String, String> attachments = new HashMap<String, String>();
 
-    public Invocation() {
+    public String getClassName() {
+		return className;
+	}
 
-    }
+	public void setClassName(String className) {
+		this.className = className;
+	}
 
-    public Invocation(Method method, Object[] paremeters) {
-        this.methodName = method.getName();
-        this.paremeters = paremeters;
-        this.parameterTypes = method.getParameterTypes();
-    }
-
-    public String getMethodName() {
+	public String getMethodName() {
 		return methodName;
 	}
 
@@ -57,6 +58,14 @@ public class Invocation implements Serializable {
 		this.paremeters = paremeters;
 	}
 
+	public boolean isNeedReply() {
+		return needReply;
+	}
+
+	public void setNeedReply(boolean needReply) {
+		this.needReply = needReply;
+	}
+
 	public Map<String, String> getAttachments() {
 		return attachments;
 	}
@@ -67,7 +76,7 @@ public class Invocation implements Serializable {
 
     @Override
     public String toString() {
-        return "Invocation [methodName=" + methodName + ", parameterTypes=" + Arrays.toString(parameterTypes)
+        return "Invocation [className=" + className + ", methodName=" + methodName + ", parameterTypes=" + Arrays.toString(parameterTypes)
             + ", paremeters=" + Arrays.toString(paremeters) + ", attachments=" + attachments + "]";
     }
 }

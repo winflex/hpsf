@@ -8,7 +8,7 @@ import java.util.concurrent.Executor;
  * 
  * @author winflex
  */
-public class ServicePublisher implements IServicePublisher {
+public class ServiceRepository implements IServiceRepository {
 	
 	protected final Map<String, Publishment> publishments = new HashMap<>();
 	
@@ -21,16 +21,8 @@ public class ServicePublisher implements IServicePublisher {
 		publishments.put(iface, new Publishment(iface, instance, executor));
 	}
 	
-	
-	public final static class Publishment {
-		public final String iface;
-		public final Object instance;
-		public final Executor executor;
-		
-		public Publishment(String iface, Object instance, Executor executor) {
-			this.iface = iface;
-			this.instance = instance;
-			this.executor = executor;
-		}
+	@Override
+	public Publishment get(String iface) {
+		return publishments.get(iface);
 	}
 }

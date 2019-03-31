@@ -1,32 +1,41 @@
 package lrpc.server;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import lrpc.common.RpcException;
+import lrpc.common.codec.Decoder;
+import lrpc.common.codec.Encoder;
+import lrpc.util.concurrent.NamedThreadFactory;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
  * @author winflex
  */
-public class RpcServer extends ServicePublisher {
+public class RpcServer extends ServiceRepository {
+	private static final Logger logger = LoggerFactory.getLogger(RpcServer.class);
 
 	private final String ip;
 	private final int port;
 	private final int ioThreads;
+
+	private final Executor defaultExecutor;
 
 	private EventLoopGroup bossGroup;
 	private EventLoopGroup workerGroup;
@@ -36,6 +45,11 @@ public class RpcServer extends ServicePublisher {
 		this.ip = ip;
 		this.port = port;
 		this.ioThreads = ioThreads;
+		this.defaultExecutor = new ThreadPoolExecutor(Runtime.getRuntime()
+				.availableProcessors() * 2, Runtime.getRuntime()
+				.availableProcessors() * 2, 1, TimeUnit.MINUTES,
+				new LinkedBlockingQueue<Runnable>(), new NamedThreadFactory(
+						"Rpc-Service-Exeecutor"));
 	}
 
 	public void start() throws RpcException {
@@ -49,8 +63,18 @@ public class RpcServer extends ServicePublisher {
 
 			@Override
 			protected void initChannel(NioSocketChannel ch) throws Exception {
+				logger.info("channel connected, channel = {}", ch);
+				ch.closeFuture().addListener(new ChannelFutureListener() {
+					
+					@Override
+					public void operationComplete(ChannelFuture future) throws Exception {
+						logger.info("channel disconnected, channel = {}", ch);
+					}
+				});
 				ChannelPipeline pl = ch.pipeline();
-
+				pl.addLast(new Decoder());
+				pl.addLast(new Encoder());
+				pl.addLast(new RequestHandler(RpcServer.this));
 			}
 		});
 
@@ -80,19 +104,7 @@ public class RpcServer extends ServicePublisher {
 		}
 	}
 
-	public static void main(String[] args) {
-		Kryo kryo = new Kryo();
-		ByteArrayOutputStream baos = new ByteArrayOutputStream(64);
-		Output output = new Output(baos);
-		kryo.writeClassAndObject(output, "a");
-		output.close();
-
-		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-		Input input = new Input(bais);
-		Object o = kryo.readClassAndObject(input);
-		input.close();
-
-		System.out.println(o);
+	public final Executor getDefaultExecutor() {
+		return defaultExecutor;
 	}
-
 }
