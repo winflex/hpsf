@@ -15,7 +15,7 @@ public class ServiceRepository implements IServiceRepository {
 	@Override
 	public synchronized void publish(String iface, Object instance, Executor executor) {
 		if (publishments.containsKey(iface)) {
-			throw new RuntimeException("duplicated publishment of " + iface);
+			throw new RuntimeException("Already published" + iface);
 		}
 		
 		publishments.put(iface, new Publishment(iface, instance, executor));

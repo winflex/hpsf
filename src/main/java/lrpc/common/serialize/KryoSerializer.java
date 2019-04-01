@@ -22,7 +22,7 @@ public class KryoSerializer implements ISerializer {
 
 	private final static ThreadLocal<Output> localOutput = new ThreadLocal<Output>() {
 		protected final Output initialValue() {
-			return new Output(64);
+			return new Output(4 * 1024, 256 * 1024);
 		}
 	};
 
@@ -42,17 +42,5 @@ public class KryoSerializer implements ISerializer {
 	public final <T> T deserialize(byte[] serializedData) throws IOException, ClassNotFoundException {
 		Input input = new Input(serializedData);
 		return (T) localKryo.get().readClassAndObject(input);
-	}
-
-	public static void main(String[] args) throws Exception {
-		KryoSerializer s = new KryoSerializer();
-		for (int j = 0; j < 100; j++) {
-			long start = System.currentTimeMillis();
-			for (int i = 0; i < 10000 * 100; i++) {
-				byte[] data = s.serialize("a");
-				s.deserialize(data);
-			}
-			System.out.println(System.currentTimeMillis() - start);
-		}
 	}
 }

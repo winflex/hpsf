@@ -13,6 +13,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import lrpc.common.protocol.RpcMessage;
+import lrpc.common.serialize.KryoSerializer;
 
 /**
  * 2 bytes of magic
@@ -45,9 +46,14 @@ public class Decoder extends ByteToMessageDecoder {
 		byte type = in.readByte();
 		long id = in.readLong();
 		int dataLength = in.readInt();
-		byte[] data = null;
+		byte[] dataBytes = null;
 		if (dataLength > 0) {
-			in.readBytes(data = new byte[dataLength]);
+			in.readBytes(dataBytes = new byte[dataLength]);
+		}
+		
+		Object data = dataBytes;
+		if (dataBytes != null && dataBytes.length > 0) {
+			data = KryoSerializer.INSTANCE.deserialize(dataBytes);
 		}
 		
 		RpcMessage message = new RpcMessage(type, id, data);

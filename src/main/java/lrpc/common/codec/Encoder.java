@@ -32,5 +32,4 @@ public class Encoder extends MessageToByteEncoder<RpcMessage> {
 			out.writeBytes(bytes);
 		}
 	}
-
 }

@@ -1,10 +1,12 @@
 package lrpc.client;
 
+import static lrpc.common.protocol.RpcMessage.TYPE_INVOKE_REQUEST;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -14,6 +16,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import lrpc.common.codec.Decoder;
 import lrpc.common.codec.Encoder;
+import lrpc.common.protocol.RpcMessage;
+import lrpc.util.Endpoint;
 import lrpc.util.concurrent.IFuture;
 
 import org.slf4j.Logger;
@@ -24,22 +28,22 @@ import org.slf4j.LoggerFactory;
  *
  * @author winflex
  */
-public class DefaultConnection implements IConnection {
+public class DefaultConnection implements RpcConnection {
 
 	private static final Logger logger = LoggerFactory.getLogger(DefaultConnection.class);
 
-	private final String ip;
-	private final int port;
-
+	private final Endpoint endpoint;
+	private final long connectTimeoutMillis;
 	private final EventLoopGroup workerGroup;
 	private Bootstrap bootstrap;
 	private volatile Channel channel;
+	
+	private volatile boolean closed;
 
-	public DefaultConnection(String ip, int port, EventLoopGroup workerGroup) throws IOException {
-		super();
-		this.ip = ip;
-		this.port = port;
+	public DefaultConnection(Endpoint endpoint, EventLoopGroup workerGroup, long connectTimeoutMillis) throws IOException {
+		this.endpoint = endpoint;
 		this.workerGroup = workerGroup;
+		this.connectTimeoutMillis = connectTimeoutMillis;
 
 		this.bootstrap = initBootstrap();
 		this.channel = connect();
@@ -49,6 +53,7 @@ public class DefaultConnection implements IConnection {
 		Bootstrap b = new Bootstrap();
 		b.group(workerGroup);
 		b.channel(NioSocketChannel.class);
+		b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) connectTimeoutMillis);
 		b.handler(new ChannelInitializer<NioSocketChannel>() {
 
 			@Override
@@ -72,7 +77,7 @@ public class DefaultConnection implements IConnection {
 	}
 
 	private Channel connect() throws IOException {
-		ChannelFuture f = bootstrap.connect(ip, port).syncUninterruptibly();
+		ChannelFuture f = bootstrap.connect(endpoint.getIp(), endpoint.getPort()).syncUninterruptibly();
 		if (f.isSuccess()) {
 			return f.channel();
 		}
@@ -85,15 +90,23 @@ public class DefaultConnection implements IConnection {
 	}
 	
 	@Override
-	public void close() throws Exception {
-		channel.close().syncUninterruptibly();
+	public synchronized void close() throws Exception {
+		if (!isClosed()) {
+			channel.close().syncUninterruptibly();
+		}
 	}
 
 	@Override
-	public IFuture<Object> send(Object req, final boolean needReply) {
+	public boolean isClosed() {
+		return closed;
+	}
+	
+	@Override
+	public IFuture<Object> send(Object data, final boolean needReply) {
 		long requestId = sequence.getAndIncrement();
 		final ResponseFuture future = new ResponseFuture(requestId);
-		channel.writeAndFlush(req).addListener(new ChannelFutureListener() {
+		RpcMessage request = new RpcMessage(TYPE_INVOKE_REQUEST, requestId, data);
+		channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
 			
 			@Override
 			public void operationComplete(ChannelFuture f) throws Exception {

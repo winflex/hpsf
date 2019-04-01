@@ -7,12 +7,14 @@ import lrpc.util.concurrent.IFuture;
  *
  * @author winflex
  */
-public interface IConnection extends AutoCloseable {
+public interface RpcConnection extends AutoCloseable {
 	
 	default IFuture<Object> send(Object req) {
 		return send(req, true);
 	}
 	
 	IFuture<Object> send(Object req, boolean needReply);
+	
+	boolean isClosed();
 	
 }

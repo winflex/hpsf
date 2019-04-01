@@ -1,10 +1,14 @@
 package lrpc.common.protocol;
 
+import java.io.Serializable;
+
 /**
  * 
  * @author winflex
  */
-public class RpcMessage {
+public class RpcMessage implements Serializable {
+	
+	private static final long serialVersionUID = -8323120792660898305L;
 	
 	public static final byte TYPE_INVOKE_REQUEST = 1;
 	public static final byte TYPE_INVOKE_RESPONSE = -1;

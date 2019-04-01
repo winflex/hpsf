@@ -5,21 +5,22 @@ import static lrpc.common.protocol.RpcMessage.TYPE_HEARTBEAT_RESPONSE;
 import static lrpc.common.protocol.RpcMessage.TYPE_INVOKE_REQUEST;
 import static lrpc.common.protocol.RpcMessage.TYPE_INVOKE_RESPONSE;
 import static lrpc.util.NettyUtils.writeAndFlush;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.Executor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 import lrpc.common.Invocation;
+import lrpc.common.RpcException;
 import lrpc.common.RpcResult;
 import lrpc.common.protocol.RpcMessage;
 import lrpc.server.IServiceRepository.Publishment;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -66,9 +67,9 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage> {
 		Invocation inv = (Invocation) req.getData();
 		Publishment publishment = rpcServer.get(inv.getClassName());
 		if (publishment == null) {
-			Throwable error = new Exception(inv.getClassName() + "." + inv.getMethodName() + " is not published");
+			Throwable error = new RpcException(inv.getClassName() + "." + inv.getMethodName() + " is not published");
 			replyWithException(ctx.channel(), req.getId(), error);
-			logger.error("invocation({}) on channel({}) failed, cause: not published", inv, ctx.channel());
+			logger.error("Invocation({}) on channel({}) failed, cause: not published", inv, ctx.channel());
 			return;
 		}
 
@@ -123,9 +124,7 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage> {
 				}
 
 				Object result = method.invoke(instance, inv.getParemeters());
-				if (inv.isNeedReply()) {
-					replyWithResult(ch, request.getId(), result);
-				}
+				replyWithResult(ch, request.getId(), result);
 			} catch (Throwable e) {
 				logger.error("Invocation({}) on channel({}) failed, cause: {}", inv, ch, e.getMessage());
 				replyWithException(ch, request.getId(), e);

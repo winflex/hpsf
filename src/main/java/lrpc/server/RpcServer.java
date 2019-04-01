@@ -19,6 +19,8 @@ import java.util.concurrent.TimeUnit;
 import lrpc.common.RpcException;
 import lrpc.common.codec.Decoder;
 import lrpc.common.codec.Encoder;
+import lrpc.util.concurrent.DefaultPromise;
+import lrpc.util.concurrent.IFuture;
 import lrpc.util.concurrent.NamedThreadFactory;
 
 import org.slf4j.Logger;
@@ -41,18 +43,23 @@ public class RpcServer extends ServiceRepository {
 	private EventLoopGroup workerGroup;
 	private Channel serverChannel;
 
+	private volatile boolean closed;
+	private final DefaultPromise<Void> closeFuture = new DefaultPromise<>();
+
+	public RpcServer(int port) {
+		this("0.0.0.0", port, 0);
+	}
+
 	public RpcServer(String ip, int port, int ioThreads) {
 		this.ip = ip;
 		this.port = port;
 		this.ioThreads = ioThreads;
-		this.defaultExecutor = new ThreadPoolExecutor(Runtime.getRuntime()
-				.availableProcessors() * 2, Runtime.getRuntime()
-				.availableProcessors() * 2, 1, TimeUnit.MINUTES,
-				new LinkedBlockingQueue<Runnable>(), new NamedThreadFactory(
-						"Rpc-Service-Exeecutor"));
+		this.defaultExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors() * 2,
+				Runtime.getRuntime().availableProcessors() * 2, 1, TimeUnit.MINUTES,
+				new LinkedBlockingQueue<Runnable>(), new NamedThreadFactory("Rpc-Service-Exeecutor"));
 	}
 
-	public void start() throws RpcException {
+	public RpcServer start() throws RpcException {
 		this.bossGroup = new NioEventLoopGroup(1);
 		this.workerGroup = new NioEventLoopGroup(ioThreads);
 
@@ -63,12 +70,12 @@ public class RpcServer extends ServiceRepository {
 
 			@Override
 			protected void initChannel(NioSocketChannel ch) throws Exception {
-				logger.info("channel connected, channel = {}", ch);
+				logger.info("Channel connected, channel = {}", ch);
 				ch.closeFuture().addListener(new ChannelFutureListener() {
-					
+
 					@Override
 					public void operationComplete(ChannelFuture future) throws Exception {
-						logger.info("channel disconnected, channel = {}", ch);
+						logger.info("Channel disconnected, channel = {}", ch);
 					}
 				});
 				ChannelPipeline pl = ch.pipeline();
@@ -87,14 +94,24 @@ public class RpcServer extends ServiceRepository {
 
 		if (f.isSuccess()) {
 			this.serverChannel = f.channel();
+			logger.info("Server listening on {}:{}", ip, port);
 		} else {
 			throw new RpcException(f.cause());
 		}
+		return this;
 	}
 
-	public void detroy() {
+	public final IFuture<Void> closeFuture() {
+		return this.closeFuture;
+	}
+
+	public synchronized void close() {
+		if (closed) {
+			return;
+		}
+		
 		if (serverChannel != null) {
-			serverChannel.close();
+			serverChannel.close().syncUninterruptibly();
 		}
 		if (bossGroup != null) {
 			bossGroup.shutdownGracefully();
@@ -102,6 +119,15 @@ public class RpcServer extends ServiceRepository {
 		if (workerGroup != null) {
 			workerGroup.shutdownGracefully();
 		}
+		
+		logger.info("Server shutdown");
+		closeFuture.setSuccess(null);
+	}
+
+	@Override
+	public synchronized void publish(String iface, Object instance, Executor executor) {
+		super.publish(iface, instance, executor);
+		logger.info("Published interface {}, instance = {}", iface, instance);
 	}
 
 	public final Executor getDefaultExecutor() {

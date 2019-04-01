@@ -22,8 +22,6 @@ public class Invocation implements Serializable {
 
     private Object[] paremeters;
     
-    private boolean needReply = true;
-
     private Map<String, String> attachments = new HashMap<String, String>();
 
     public String getClassName() {
@@ -56,14 +54,6 @@ public class Invocation implements Serializable {
 
 	public void setParemeters(Object[] paremeters) {
 		this.paremeters = paremeters;
-	}
-
-	public boolean isNeedReply() {
-		return needReply;
-	}
-
-	public void setNeedReply(boolean needReply) {
-		this.needReply = needReply;
 	}
 
 	public Map<String, String> getAttachments() {

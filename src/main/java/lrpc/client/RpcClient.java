@@ -3,8 +3,13 @@
  */
 package lrpc.client;
 
-import java.lang.reflect.Proxy;
-
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import lrpc.client.proxy.IProxyFactory;
+import lrpc.client.proxy.JdkProxyFactory;
+import lrpc.common.IInvoker;
+import lrpc.common.RpcException;
+import lrpc.util.Endpoint;
 import lrpc.util.URL;
 
 /**
@@ -13,25 +18,31 @@ import lrpc.util.URL;
  */
 public class RpcClient implements AutoCloseable {
 
-	private final String ip;
-	private final int port;
-	private final int ioThreads;
+	private final RpcClientConfig config;
+	private final Endpoint endpoint;
+	private final EventLoopGroup workerGroup; // The shared netty io thread pool
 
-	public RpcClient(String ip, int port, int ioThreads) {
-		this.ip = ip;
-		this.port = port;
-		this.ioThreads = ioThreads;
+	
+	public RpcClient(Endpoint endpoint) {
+		this(endpoint, new RpcClientConfig());
+	}
+
+	public RpcClient(Endpoint endpoint, RpcClientConfig config) {
+		this.config = config;
+		this.endpoint = endpoint;
+		this.workerGroup = new NioEventLoopGroup(config.getIoThreads());
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T getProxy(Class<T> iface) throws RpcException {
+		IProxyFactory proxyFactory = new JdkProxyFactory();
+		IInvoker<?> invoker = new RemoteInvoker<>(endpoint, iface, 1, config.getConnectTimeoutMillis(),
+				config.getInvokeTimeoutMillis(), workerGroup);
+		return (T) proxyFactory.getProxy(invoker);
 	}
 
 	@Override
 	public void close() throws Exception {
-
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T> T getProxy(URL url, Class<T> iface) {
-		ClassLoader cl = getClass().getClassLoader();
-		Class<?>[] ifaces = new Class[] { iface };
-		return (T) Proxy.newProxyInstance(cl, ifaces, new InvokeInvocationHandler(this, url));
+		workerGroup.shutdownGracefully();
 	}
 }
