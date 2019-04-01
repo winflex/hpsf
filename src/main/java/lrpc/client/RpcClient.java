@@ -10,7 +10,6 @@ import lrpc.client.proxy.JdkProxyFactory;
 import lrpc.common.IInvoker;
 import lrpc.common.RpcException;
 import lrpc.util.Endpoint;
-import lrpc.util.URL;
 
 /**
  *
