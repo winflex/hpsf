@@ -1,10 +1,14 @@
 package lrpc.client;
 
+import lrpc.util.Endpoint;
+
 /**
  * 
  * @author winflex
  */
 public class RpcClientOptions {
+	
+	private Endpoint endpoint;
 	
 	private int ioThreads;
 	
@@ -13,6 +17,23 @@ public class RpcClientOptions {
 	private int requestTimeoutMillis = Integer.MAX_VALUE; // default to forever
 	
 	private int maxConnections = 1;
+
+	
+	public RpcClientOptions(Endpoint endpoint) {
+		this.endpoint = endpoint;
+	}
+
+	public Endpoint getEndpoint() {
+		return endpoint;
+	}
+
+	public void setEndpoint(Endpoint endpoint) {
+		this.endpoint = endpoint;
+	}
+
+	public void setRequestTimeoutMillis(int requestTimeoutMillis) {
+		this.requestTimeoutMillis = requestTimeoutMillis;
+	}
 
 	public int getMaxConnections() {
 		return maxConnections;

@@ -1,5 +1,14 @@
 package lrpc.server;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -10,21 +19,13 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-
-import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
+import io.netty.handler.timeout.IdleStateHandler;
 import lrpc.common.RpcException;
 import lrpc.common.codec.Decoder;
 import lrpc.common.codec.Encoder;
 import lrpc.util.concurrent.DefaultPromise;
 import lrpc.util.concurrent.IFuture;
 import lrpc.util.concurrent.NamedThreadFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -33,27 +34,22 @@ import org.slf4j.LoggerFactory;
 public class RpcServer extends ServiceRepository {
 	private static final Logger logger = LoggerFactory.getLogger(RpcServer.class);
 
-	private final String ip;
-	private final int port;
-	private final int ioThreads;
-
+	private final RpcServerOptions options;
 	private final Executor defaultExecutor;
 
 	private EventLoopGroup bossGroup;
 	private EventLoopGroup workerGroup;
 	private Channel serverChannel;
 
-	private volatile boolean closed;
+	private final AtomicBoolean closed = new AtomicBoolean();
 	private final DefaultPromise<Void> closeFuture = new DefaultPromise<>();
 
 	public RpcServer(int port) {
-		this("0.0.0.0", port, 0);
+		this(new RpcServerOptions(port));
 	}
 
-	public RpcServer(String ip, int port, int ioThreads) {
-		this.ip = ip;
-		this.port = port;
-		this.ioThreads = ioThreads;
+	public RpcServer(RpcServerOptions options) {
+		this.options = options;
 		this.defaultExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors() * 2,
 				Runtime.getRuntime().availableProcessors() * 2, 1, TimeUnit.MINUTES,
 				new LinkedBlockingQueue<Runnable>(), new NamedThreadFactory("Rpc-Service-Exeecutor"));
@@ -61,7 +57,7 @@ public class RpcServer extends ServiceRepository {
 
 	public RpcServer start() throws RpcException {
 		this.bossGroup = new NioEventLoopGroup(1);
-		this.workerGroup = new NioEventLoopGroup(ioThreads);
+		this.workerGroup = new NioEventLoopGroup(options.getIoThreads());
 
 		ServerBootstrap b = new ServerBootstrap();
 		b.group(bossGroup, workerGroup);
@@ -79,6 +75,7 @@ public class RpcServer extends ServiceRepository {
 					}
 				});
 				ChannelPipeline pl = ch.pipeline();
+				pl.addLast(new IdleStateHandler(options.getHeartbeatInterval() * 2, 0, 0, TimeUnit.MILLISECONDS));
 				pl.addLast(new Decoder());
 				pl.addLast(new Encoder());
 				pl.addLast(new RequestHandler(RpcServer.this));
@@ -86,44 +83,40 @@ public class RpcServer extends ServiceRepository {
 		});
 
 		ChannelFuture f = null;
-		if (ip == null || ip.isEmpty()) {
-			f = b.bind(port).syncUninterruptibly();
-		} else {
-			f = b.bind(ip, port).syncUninterruptibly();
-		}
+		f = b.bind(options.getBindIp(), options.getPort()).syncUninterruptibly();
 
 		if (f.isSuccess()) {
 			this.serverChannel = f.channel();
-			logger.info("Server listening on {}:{}", ip, port);
+			logger.info("Server listening on {}:{}", options.getBindIp(), options.getPort());
 		} else {
 			throw new RpcException(f.cause());
 		}
 		return this;
 	}
 
-	public final IFuture<Void> closeFuture() {
-		return this.closeFuture;
-	}
-
-	public synchronized void close() {
-		if (closed) {
+	public void close() {
+		if (!closed.compareAndSet(false, true)) {
 			return;
 		}
-		
-		if (serverChannel != null) {
-			serverChannel.close().syncUninterruptibly();
-		}
-		if (bossGroup != null) {
-			bossGroup.shutdownGracefully();
-		}
-		if (workerGroup != null) {
-			workerGroup.shutdownGracefully();
-		}
-		
-		logger.info("Server shutdown");
-		closeFuture.setSuccess(null);
-	}
 
+		try {
+			if (serverChannel != null) {
+				serverChannel.close().syncUninterruptibly();
+			}
+			if (bossGroup != null) {
+				bossGroup.shutdownGracefully();
+			}
+			if (workerGroup != null) {
+				workerGroup.shutdownGracefully();
+			}
+	
+			logger.info("Server shutdown");
+			closeFuture.setSuccess(null);
+		} catch (Throwable e) {
+			closeFuture.setFailure(e);
+		}
+	}
+	
 	@Override
 	public synchronized void publish(String iface, Object instance, Executor executor) {
 		super.publish(iface, instance, executor);
@@ -132,5 +125,13 @@ public class RpcServer extends ServiceRepository {
 
 	public final Executor getDefaultExecutor() {
 		return defaultExecutor;
+	}
+	
+	public final RpcServerOptions getOptions() {
+		return options;
+	}
+
+	public final IFuture<Void> closeFuture() {
+		return this.closeFuture;
 	}
 }

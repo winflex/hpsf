@@ -1,13 +1,6 @@
 package lrpc.server;
 
-import static lrpc.common.protocol.RpcMessage.TYPE_HEARTBEAT_REQUEST;
-import static lrpc.common.protocol.RpcMessage.TYPE_HEARTBEAT_RESPONSE;
-import static lrpc.common.protocol.RpcMessage.TYPE_INVOKE_REQUEST;
-import static lrpc.common.protocol.RpcMessage.TYPE_INVOKE_RESPONSE;
 import static lrpc.util.NettyUtils.writeAndFlush;
-
-import java.lang.reflect.Method;
-import java.util.concurrent.Executor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,18 +9,23 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.timeout.IdleStateEvent;
+import lrpc.common.IInvoker;
 import lrpc.common.Invocation;
-import lrpc.common.RpcException;
 import lrpc.common.RpcResult;
+import lrpc.common.ServerInfo;
+import lrpc.common.protocol.HeartbeatMessage;
+import lrpc.common.protocol.InitializeMessage;
 import lrpc.common.protocol.RpcMessage;
-import lrpc.server.IServiceRepository.Publishment;
+import lrpc.common.protocol.RpcRequest;
+import lrpc.common.protocol.RpcResponse;
 
 /**
  * 
  *
  * @author winflex
  */
-public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage> {
+public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 
 	private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
 
@@ -39,42 +37,39 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage> {
 	}
 
 	@Override
-	protected void channelRead0(ChannelHandlerContext ctx, RpcMessage req) throws Exception {
-		switch (req.getType()) {
-		case TYPE_HEARTBEAT_REQUEST:
-			handleHeartbeat(ctx, req);
-			break;
-		case TYPE_INVOKE_REQUEST:
-			handleInvocation(ctx, req);
-			break;
-		default:
-			logger.warn("Recieved unexpected message on channel({}), type = {}, channel will be closed", ctx.channel(), req.getType());
+	protected void channelRead0(ChannelHandlerContext ctx, RpcMessage<?> req) throws Exception {
+		if (req instanceof RpcRequest) {
+			handleInvocation(ctx, (RpcRequest) req);
+		} else if (req instanceof HeartbeatMessage) {
+			handleHeartbeat(ctx, (HeartbeatMessage) req);
+		} else {
+			logger.warn("Recieved unexpected message(type={}) on channel({})", req.getType(), ctx.channel());
 			ctx.close();
-			break;
 		}
 	}
 
-	private void handleHeartbeat(ChannelHandlerContext ctx, RpcMessage req) {
+	@Override
+	public void channelActive(ChannelHandlerContext ctx) throws Exception {
+		ServerInfo info = new ServerInfo();
+		info.setHeartbeatIntervalMillis(rpcServer.getOptions().getHeartbeatInterval());
+		ctx.writeAndFlush(new InitializeMessage(info));
+	}
+
+	@Override
+	public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+		if (evt instanceof IdleStateEvent) {
+			logger.warn("Channel has passed idle timeout, channel = {}", ctx.channel());
+			ctx.close();
+		}
+	}
+
+	private void handleHeartbeat(ChannelHandlerContext ctx, HeartbeatMessage req) {
 		logger.debug("Recieved heartbeat message on channel({})", ctx.channel());
-		
-		RpcMessage response = new RpcMessage(TYPE_HEARTBEAT_RESPONSE, req.getId(), null);
-		writeAndFlush(ctx.channel(), response);
 	}
 
-	private void handleInvocation(ChannelHandlerContext ctx, RpcMessage req) {
-		logger.debug("Recieved invocation message on channel({})", ctx.channel());
-		
-		Invocation inv = (Invocation) req.getData();
-		Publishment publishment = rpcServer.get(inv.getClassName());
-		if (publishment == null) {
-			Throwable error = new RpcException(inv.getClassName() + "." + inv.getMethodName() + " is not published");
-			replyWithException(ctx.channel(), req.getId(), error);
-			logger.error("Invocation({}) on channel({}) failed, cause: not published", inv, ctx.channel());
-			return;
-		}
-
-		Executor e = publishment.getExecutor() == null ? rpcServer.getDefaultExecutor() : publishment.getExecutor();
-		e.execute(new InvocationTask(ctx.channel(), req, inv, publishment));
+	private void handleInvocation(ChannelHandlerContext ctx, RpcRequest req) {
+		logger.debug("Recieved request message on channel({})", ctx.channel());
+		rpcServer.getDefaultExecutor().execute(new InvocationTask(ctx.channel(), req));
 	}
 
 	/**
@@ -83,50 +78,37 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage> {
 	private void replyWithResult(Channel ch, long id, Object data) {
 		RpcResult result = new RpcResult();
 		result.setResult(data);
-		writeAndFlush(ch, new RpcMessage(TYPE_INVOKE_RESPONSE, id, result));
+		writeAndFlush(ch, new RpcResponse(id, result));
 	}
-	
+
 	/**
 	 * reply to the channel with exception.
 	 */
 	private ChannelFuture replyWithException(Channel ch, long id, Throwable cause) {
 		RpcResult result = new RpcResult();
 		result.setCause(cause);
-		return writeAndFlush(ch, new RpcMessage(TYPE_INVOKE_RESPONSE, id, result));
+		return writeAndFlush(ch, new RpcResponse(id, result));
 	}
-	
 
 	final class InvocationTask implements Runnable {
 		final Channel ch;
-		final RpcMessage request;
-		final Invocation inv;
-		final Publishment pub;
+		final RpcRequest request;
 
-		InvocationTask(Channel ch, RpcMessage request, Invocation inv, Publishment publishment) {
-			super();
+		InvocationTask(Channel ch, RpcRequest request) {
 			this.ch = ch;
 			this.request = request;
-			this.inv = inv;
-			this.pub = publishment;
 		}
 
 		@Override
 		public void run() {
-			final Object instance = pub.getInstance(); // the service instance
 			try {
-				Method method = instance.getClass().getMethod(inv.getMethodName(), inv.getParameterTypes());
-				if (method == null) {
-					Throwable error = new Exception(inv.getClassName() + "." + inv.getMethodName()
-							+ " is not published");
-					replyWithException(ch, request.getId(), error);
-					logger.error("Invocation({}) on channel({}) failed, cause: not published", inv, ch);
-					return;
-				}
-
-				Object result = method.invoke(instance, inv.getParemeters());
+				Invocation inv = request.getData();
+				Class<?> clazz = Class.forName(inv.getClassName());
+				IInvoker<?> invoker = new ServerInvoker<>(clazz, rpcServer);
+				Object result = invoker.invoke(inv);
 				replyWithResult(ch, request.getId(), result);
 			} catch (Throwable e) {
-				logger.error("Invocation({}) on channel({}) failed, cause: {}", inv, ch, e.getMessage());
+				logger.error("Invocation({}) on channel({}) failed, cause: {}", request.getData(), ch, e.getMessage());
 				replyWithException(ch, request.getId(), e);
 			}
 		}

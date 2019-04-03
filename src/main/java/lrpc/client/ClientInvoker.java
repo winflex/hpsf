@@ -8,7 +8,7 @@ import lrpc.common.RpcException;
 import lrpc.util.concurrent.IFuture;
 
 /**
- * The remoting invoker
+ * 远程调用
  * 
  * @author winflex
  */
@@ -17,7 +17,7 @@ public class ClientInvoker<T> implements IInvoker<T> {
 	private final RpcClient rpcClient;
 	private final Class<T> iface;
 
-	public ClientInvoker(RpcClient rpcClient, Class<T> iface) throws RpcException {
+	public ClientInvoker(Class<T> iface, RpcClient rpcClient) throws RpcException {
 		this.rpcClient = rpcClient;
 		this.iface = iface;
 	}

@@ -22,7 +22,7 @@ public class NettyUtils {
 		}
 	};
 	
-	public static ChannelFuture writeAndFlush(Channel ch, RpcMessage msg) {
+	public static ChannelFuture writeAndFlush(Channel ch, RpcMessage<?> msg) {
 		// TODO check for ch.isWritable();
 		return ch.writeAndFlush(msg).addListener(li);
 	}

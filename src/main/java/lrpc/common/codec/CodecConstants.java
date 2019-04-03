@@ -6,7 +6,7 @@ package lrpc.common.codec;
  */
 public interface CodecConstants {
 	
-	int HEADER_LENGTH = 16;
+	int HEADER_LENGTH = 15;
 	
 	int BODY_LENGTH_OFFSET = 11;
 	

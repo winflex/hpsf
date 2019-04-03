@@ -18,6 +18,7 @@ public interface IServiceRepository {
 
 	Publishment get(String iface);
 
+	
 	public static final class Publishment {
 		private final String className;
 		private final Object instance;

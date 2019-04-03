@@ -15,10 +15,10 @@ import lrpc.common.serialize.KryoSerializer;
  * 
  * @author winflex
  */
-public class Encoder extends MessageToByteEncoder<RpcMessage> {
+public class Encoder extends MessageToByteEncoder<RpcMessage<?>> {
 
 	@Override
-	protected void encode(ChannelHandlerContext ctx, RpcMessage msg, ByteBuf out) throws Exception {
+	protected void encode(ChannelHandlerContext ctx, RpcMessage<?> msg, ByteBuf out) throws Exception {
 		out.writeShort(CodecConstants.MAGIC);
 		out.writeByte(msg.getType());
 		out.writeLong(msg.getId());
