@@ -10,28 +10,31 @@ import lrpc.util.concurrent.SynchronousExecutor;
  */
 public interface IServiceRepository {
 
-	default void publish(String iface, Object instance) {
+	default void publish(Class<?> iface, Object instance) {
 		publish(iface, instance, SynchronousExecutor.INSTANCE);
 	}
 
-	void publish(String iface, Object instance, Executor executor);
+	void publish(Class<?> iface, Object instance, Executor executor);
 
 	Publishment get(String iface);
 
-	
+	default Publishment get(Class<?> iface) {
+		return get(iface.getName());
+	}
+
 	public static final class Publishment {
-		private final String className;
+		private final Class<?> iface;
 		private final Object instance;
 		private final Executor executor;
 
-		public Publishment(String className, Object instance, Executor executor) {
-			this.className = className;
+		public Publishment(Class<?> iface, Object instance, Executor executor) {
+			this.iface = iface;
 			this.instance = instance;
 			this.executor = executor;
 		}
 
-		public String getClassName() {
-			return className;
+		public Class<?> getInterface() {
+			return iface;
 		}
 
 		public Object getInstance() {

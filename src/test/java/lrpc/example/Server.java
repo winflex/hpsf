@@ -12,7 +12,7 @@ import lrpc.server.RpcServer;
 public class Server {
 	public static void main(String[] args) throws RpcException, IOException {
 		RpcServer server = new RpcServer(9999);
-		server.publish(AddService.class.getName(), new AddServiceImpl());
+		server.publish(AddService.class, new AddServiceImpl());
 		new Thread() {
 			public void run() {
 				try {

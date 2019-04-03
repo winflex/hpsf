@@ -114,7 +114,7 @@ public class RpcServer extends ServiceRepository {
 				workerGroup.shutdownGracefully();
 			}
 			
-			if (options.getExecutor() == null) { // shutdown only if executor was created by server
+			if (options.getExecutor() == null) { // shutdown executor only if it was created by server
 				((ThreadPoolExecutor) executor).shutdownNow();
 			}
 	
@@ -126,7 +126,7 @@ public class RpcServer extends ServiceRepository {
 	}
 	
 	@Override
-	public synchronized void publish(String iface, Object instance, Executor executor) {
+	public synchronized void publish(Class<?> iface, Object instance, Executor executor) {
 		super.publish(iface, instance, executor);
 		logger.info("Published interface {}, instance = {}", iface, instance);
 	}

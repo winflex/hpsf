@@ -13,12 +13,13 @@ public class ServiceRepository implements IServiceRepository {
 	protected final Map<String, Publishment> publishments = new HashMap<>();
 	
 	@Override
-	public synchronized void publish(String iface, Object instance, Executor executor) {
-		if (publishments.containsKey(iface)) {
+	public synchronized void publish(Class<?> iface, Object instance, Executor executor) {
+		String ifaceName = iface.getName();
+		if (publishments.containsKey(ifaceName)) {
 			throw new RuntimeException("Already published" + iface);
 		}
 		
-		publishments.put(iface, new Publishment(iface, instance, executor));
+		publishments.put(iface.getName(), new Publishment(iface, instance, executor));
 	}
 	
 	@Override
