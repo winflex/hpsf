@@ -69,7 +69,7 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 
 	private void handleInvocation(ChannelHandlerContext ctx, RpcRequest req) {
 		logger.debug("Recieved request message on channel({})", ctx.channel());
-		rpcServer.getDefaultExecutor().execute(new InvocationTask(ctx.channel(), req));
+		rpcServer.getExecutor().execute(new InvocationTask(ctx.channel(), req));
 	}
 
 	/**

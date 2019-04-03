@@ -1,5 +1,7 @@
 package lrpc.server;
 
+import java.util.concurrent.Executor;
+
 /**
  * 
  * @author winflex
@@ -13,6 +15,8 @@ public class RpcServerOptions {
 	private int ioThreads = 0;
 
 	private int heartbeatInterval = 10000;
+	
+	private Executor executor;
 
 	public RpcServerOptions(int port) {
 		if (port <= 0) {
@@ -51,5 +55,13 @@ public class RpcServerOptions {
 
 	public void setHeartbeatInterval(int heartbeatInterval) {
 		this.heartbeatInterval = heartbeatInterval;
+	}
+
+	public Executor getExecutor() {
+		return executor;
+	}
+
+	public void setExecutor(Executor executor) {
+		this.executor = executor;
 	}
 }

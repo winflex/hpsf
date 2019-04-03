@@ -35,7 +35,7 @@ public class RpcServer extends ServiceRepository {
 	private static final Logger logger = LoggerFactory.getLogger(RpcServer.class);
 
 	private final RpcServerOptions options;
-	private final Executor defaultExecutor;
+	private final Executor executor;
 
 	private EventLoopGroup bossGroup;
 	private EventLoopGroup workerGroup;
@@ -50,9 +50,13 @@ public class RpcServer extends ServiceRepository {
 
 	public RpcServer(RpcServerOptions options) {
 		this.options = options;
-		this.defaultExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors() * 2,
-				Runtime.getRuntime().availableProcessors() * 2, 1, TimeUnit.MINUTES,
-				new LinkedBlockingQueue<Runnable>(), new NamedThreadFactory("Rpc-Service-Exeecutor"));
+		if (options.getExecutor() == null) {
+			executor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors() * 2,
+					Runtime.getRuntime().availableProcessors() * 2, 1, TimeUnit.MINUTES,
+					new LinkedBlockingQueue<Runnable>(), new NamedThreadFactory("Rpc-Service-Exeecutor"));
+		} else {
+			executor = options.getExecutor();
+		}
 	}
 
 	public RpcServer start() throws RpcException {
@@ -109,6 +113,10 @@ public class RpcServer extends ServiceRepository {
 			if (workerGroup != null) {
 				workerGroup.shutdownGracefully();
 			}
+			
+			if (options.getExecutor() == null) { // shutdown only if executor was created by server
+				((ThreadPoolExecutor) executor).shutdownNow();
+			}
 	
 			logger.info("Server shutdown");
 			closeFuture.setSuccess(null);
@@ -123,8 +131,8 @@ public class RpcServer extends ServiceRepository {
 		logger.info("Published interface {}, instance = {}", iface, instance);
 	}
 
-	public final Executor getDefaultExecutor() {
-		return defaultExecutor;
+	public final Executor getExecutor() {
+		return executor;
 	}
 	
 	public final RpcServerOptions getOptions() {
