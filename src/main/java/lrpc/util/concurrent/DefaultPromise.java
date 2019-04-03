@@ -117,7 +117,7 @@ public class DefaultPromise<V> implements IPromise<V>, Serializable {
 	}
 
 	@Override
-	public boolean isSuccessful() {
+	public boolean isSuccess() {
 		Object result = this.result;
 		if (result == null) {
 			return false;

@@ -67,7 +67,7 @@ public class Decoder extends ByteToMessageDecoder {
 			data = KryoSerializer.INSTANCE.deserialize(dataBytes);
 		}
 		if (type == TYPE_INVOKE_REQUEST) {
-			out.add(new RpcRequest((Invocation) data));
+			out.add(new RpcRequest(id, (Invocation) data));
 		} else if (type == TYPE_INVOKE_RESPONSE) {
 			out.add(new RpcResponse(id, (RpcResult) data));
 		} else if (type == TYPE_HEARTBEAT_REQUEST) {

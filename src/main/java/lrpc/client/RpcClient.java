@@ -87,9 +87,9 @@ public class RpcClient {
 		IProxyFactory proxyFactory = new JdkProxyFactory();
 		return (T) proxyFactory.getProxy(new ClientInvoker<>(iface, this));
 	}
-
+	
 	@SuppressWarnings("unchecked")
-	<T> IFuture<T> send(Invocation inv, boolean needReply) {
+	<T> IFuture<T> send(Invocation inv) {
 		RpcRequest request = new RpcRequest(inv);
 		final long requestId = request.getId();
 		final ResponseFuture future = new ResponseFuture(requestId, options.getRequestTimeoutMillis());
@@ -108,9 +108,6 @@ public class RpcClient {
 				public void operationComplete(ChannelFuture f) throws Exception {
 					if (!f.isSuccess()) {
 						ResponseFuture.doneWithException(requestId, f.cause());
-					} else if (!needReply) {
-						// need no reply from server, reply upon request sent
-						ResponseFuture.doneWithResult(requestId, null);
 					}
 				}
 			});

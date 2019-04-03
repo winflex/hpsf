@@ -24,8 +24,14 @@ public class ClientInvoker<T> implements IInvoker<T> {
 
 	@Override
 	public Object invoke(Invocation invocation) throws Throwable {
-		IFuture<Object> future = rpcClient.send(invocation, true);
-		return future.get(rpcClient.getOptions().getRequestTimeoutMillis(), TimeUnit.MILLISECONDS);
+		IFuture<Object> future = rpcClient.send(invocation);
+		boolean async = RpcContext.getContext().isAsync();
+		if (async) {
+			RpcContext.getContext().setFuture(future);
+			return null;
+		} else {
+			return future.get(rpcClient.getOptions().getRequestTimeoutMillis(), TimeUnit.MILLISECONDS);
+		}
 	}
 
 	@Override

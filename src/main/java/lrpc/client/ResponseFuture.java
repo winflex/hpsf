@@ -28,7 +28,7 @@ public class ResponseFuture extends DefaultPromise<Object> {
 	private static final ConcurrentMap<Long, ResponseFuture> inflightFutures = new ConcurrentHashMap<>();
 	
 	private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
-			new NamedThreadFactory("ResponseFuture-Watchdog"));
+			new NamedThreadFactory("ResponseFuture-Watchdog", true));
 
 	public static void doneWithResult(long requestId, Object result) {
 		ResponseFuture future = inflightFutures.get(requestId);
@@ -67,8 +67,7 @@ public class ResponseFuture extends DefaultPromise<Object> {
 			@Override
 			public void run() {
 				// timed out
-				TimeoutException e = new TimeoutException("timed out after " + timeoutMillis + "ms");
-				setFailure(e);
+				setFailure(new TimeoutException("timed out after " + timeoutMillis + "ms"));
 			}
 		}, timeoutMillis, TimeUnit.MILLISECONDS);
 	}

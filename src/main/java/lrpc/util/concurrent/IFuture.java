@@ -23,7 +23,7 @@ public interface IFuture<V> extends Future<V> {
 	V get(long timeout, TimeUnit unit) throws InterruptedException,
 			ExecutionException, TimeoutException;
 
-	boolean isSuccessful();
+	boolean isSuccess();
 
 	Throwable cause();
 

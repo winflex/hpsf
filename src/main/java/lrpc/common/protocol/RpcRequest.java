@@ -13,8 +13,12 @@ public class RpcRequest extends RpcMessage<Invocation> {
 	private static final long serialVersionUID = -3291542680694765400L;
 
 	public RpcRequest(Invocation inv) {
+		this(sequence.incrementAndGet(), inv);
+	}
+	
+	public RpcRequest(long id, Invocation inv) {
 		setType(TYPE_INVOKE_REQUEST);
-		setId(sequence.incrementAndGet());
+		setId(id);
 		setData(inv);
 	}
 	
