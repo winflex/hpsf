@@ -1,8 +1,9 @@
 package lrpc.client.proxy;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import lrpc.client.InvokeInvocationHandler;
 import lrpc.common.IInvoker;
 import lrpc.common.RpcException;
 
@@ -17,7 +18,13 @@ public class JdkProxyFactory implements IProxyFactory {
 	public <T> T getProxy(IInvoker<T> invoker) throws RpcException {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		Class<?>[] interfaces = new Class<?>[] { invoker.getInterface() };
-		InvokeInvocationHandler handler = new InvokeInvocationHandler(invoker);
+		InvocationHandler handler = new InvocationHandler() {
+			
+			@Override
+			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+				return IProxyInterceptor.INSTANCE.intercept(invoker, proxy, method, args);
+			}
+		};
 		return (T) Proxy.newProxyInstance(classLoader, interfaces, handler);
 	}
 }

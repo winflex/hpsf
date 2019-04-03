@@ -1,29 +1,20 @@
-/**
- * 
- */
-package lrpc.client;
+package lrpc.client.proxy;
 
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 import lrpc.common.IInvoker;
 import lrpc.common.Invocation;
 
 /**
- *
+ * The generic proxy procedure.
+ * 
  * @author winflex
  */
-public class InvokeInvocationHandler implements InvocationHandler {
-
-	private final IInvoker<?> invoker;
+public interface IProxyInterceptor {
 	
+	public static final IProxyInterceptor INSTANCE = new IProxyInterceptor() {};
 	
-	public InvokeInvocationHandler(IInvoker<?> invoker) {
-		this.invoker = invoker;
-	}
-
-	@Override
-	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+	default Object intercept(IInvoker<?> invoker, Object proxy, Method method, Object[] args) throws Throwable {
 		String methodName = method.getName();
         Class<?>[] parameterTypes = method.getParameterTypes();
         if (method.getDeclaringClass() == Object.class) {
@@ -45,5 +36,4 @@ public class InvokeInvocationHandler implements InvocationHandler {
         inv.setParemeters(args);
         return invoker.invoke(inv);
 	}
-
 }
