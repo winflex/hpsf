@@ -6,7 +6,7 @@ import lrpc.common.IInvoker;
 import lrpc.common.Invocation;
 
 /**
- * The generic proxy procedure.
+ * 统一的代理逻辑, 抽象出来以便不同的代理实现公用
  * 
  * @author winflex
  */

@@ -79,5 +79,4 @@ public class ResponseFuture extends DefaultPromise<Object> {
 	public final long getRequestId() {
 		return requestId;
 	}
-
 }

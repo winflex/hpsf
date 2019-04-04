@@ -61,9 +61,14 @@ public class Invocation implements Serializable {
 	}
 
 	public void setAttachments(Map<String, String> attachments) {
-		this.attachments = attachments;
+		this.attachments.clear();
+		this.attachments.putAll(attachments);
 	}
-
+	
+	public void addAttachments(Map<String, String> attachments) {
+		this.attachments.putAll(attachments);
+	}
+	
     @Override
     public String toString() {
         return "Invocation [className=" + className + ", methodName=" + methodName + ", parameterTypes=" + Arrays.toString(parameterTypes)

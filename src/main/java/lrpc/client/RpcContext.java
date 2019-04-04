@@ -1,5 +1,7 @@
 package lrpc.client;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import lrpc.util.concurrent.DefaultPromise;
@@ -31,6 +33,8 @@ public class RpcContext {
 	
 	private IFuture<?> future;
 	
+	private Map<String, String> attachments = new HashMap<>();
+	
 	@SuppressWarnings("unchecked")
 	public <T> IFuture<T> asyncCall(Callable<T> callable) {
 		this.async = true;
@@ -58,5 +62,26 @@ public class RpcContext {
 
 	public final void setFuture(IFuture<?> future) {
 		this.future = future;
+	}
+
+	public Map<String, String> getAttachments() {
+		return attachments;
+	}
+
+	public void setAttachments(Map<String, String> attachments) {
+		this.attachments.clear();
+		this.attachments.putAll(attachments);
+	}
+	
+	public void addAttachments(Map<String, String> attachments) {
+		this.attachments.putAll(attachments);
+	}
+	
+	public void addAttachment(String key, String value) {
+		this.attachments.put(key, value);
+	}
+
+	public String getAttachment(String key) {
+		return this.attachments.get(key);
 	}
 }
