@@ -3,7 +3,7 @@
  */
 package lrpc.client;
 
-import java.util.concurrent.TimeUnit;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
@@ -13,13 +13,11 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.pool.AbstractChannelPoolHandler;
-import io.netty.channel.pool.ChannelPool;
-import io.netty.channel.pool.FixedChannelPool;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lrpc.client.proxy.IProxyFactory;
 import lrpc.client.proxy.JdkProxyFactory;
@@ -28,6 +26,8 @@ import lrpc.common.RpcException;
 import lrpc.common.codec.Decoder;
 import lrpc.common.codec.Encoder;
 import lrpc.common.protocol.RpcRequest;
+import lrpc.util.ChannelGroup;
+import lrpc.util.ChannelGroup.HealthChecker;
 import lrpc.util.Endpoint;
 import lrpc.util.concurrent.IFuture;
 
@@ -41,21 +41,32 @@ public class RpcClient {
 
 	private final RpcClientOptions options;
 	private final EventLoopGroup workerGroup;
-	private final ChannelPool channelPool;
+	private final ChannelGroup channelGroup;
 
 	private final AtomicBoolean closed = new AtomicBoolean();
 
-	public RpcClient(Endpoint endpoint) {
+	public RpcClient(Endpoint endpoint) throws IOException {
 		this(new RpcClientOptions(endpoint));
 	}
 
-	public RpcClient(RpcClientOptions options) {
+	public RpcClient(RpcClientOptions options) throws IOException {
 		this.options = options;
 		this.workerGroup = new NioEventLoopGroup(options.getIoThreads());
-		this.channelPool = new FixedChannelPool(createBootstrap(), new AbstractChannelPoolHandler() {
+		this.channelGroup = new ChannelGroup(options.getEndpoint(), createBootstrap(), options.getMaxConnections(),
+				HealthChecker.ACTIVE);
+	}
+
+	private Bootstrap createBootstrap() {
+		Endpoint endpoint = options.getEndpoint();
+		Bootstrap b = new Bootstrap();
+		b.group(workerGroup);
+		b.channel(NioSocketChannel.class);
+		b.remoteAddress(endpoint.getIp(), endpoint.getPort());
+		b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, options.getConnectTimeoutMillis());
+		b.handler(new ChannelInitializer<Channel>() {
 
 			@Override
-			public void channelCreated(Channel ch) throws Exception {
+			protected void initChannel(Channel ch) throws Exception {
 				logger.info("Channel connected, channel = {}", ch);
 				ch.closeFuture().addListener(new ChannelFutureListener() {
 
@@ -70,16 +81,7 @@ public class RpcClient {
 				pl.addLast(new Encoder());
 				pl.addLast(new ResponseHandler());
 			}
-		}, options.getMaxConnections());
-	}
-
-	private Bootstrap createBootstrap() {
-		Endpoint endpoint = options.getEndpoint();
-		Bootstrap b = new Bootstrap();
-		b.group(workerGroup);
-		b.channel(NioSocketChannel.class);
-		b.remoteAddress(endpoint.getIp(), endpoint.getPort());
-		b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, options.getConnectTimeoutMillis());
+		});
 		return b;
 	}
 
@@ -87,21 +89,14 @@ public class RpcClient {
 		IProxyFactory proxyFactory = new JdkProxyFactory();
 		return (T) proxyFactory.getProxy(new ClientInvoker<>(iface, this));
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	<T> IFuture<T> send(Invocation inv) {
 		RpcRequest request = new RpcRequest(inv);
 		final long requestId = request.getId();
 		final ResponseFuture future = new ResponseFuture(requestId, options.getRequestTimeoutMillis());
-		Channel channel = null;
 		try {
-			// TODO 这里不应该用连接池
-			channel = channelPool.acquire().get(options.getRequestTimeoutMillis(), TimeUnit.MILLISECONDS);
-			channelPool.release(channel);
-		} catch (Exception e) {
-			ResponseFuture.doneWithException(requestId, e);
-		}
-		if (channel != null) {
+			Channel channel = channelGroup.getChannel(options.getConnectTimeoutMillis());
 			channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
 
 				@Override
@@ -111,17 +106,18 @@ public class RpcClient {
 					}
 				}
 			});
+		} catch (Exception e) {
+			ResponseFuture.doneWithException(requestId, e);
 		}
 		return (IFuture<T>) future;
 	}
-
 	public void close() {
 		if (!closed.compareAndSet(false, true)) {
 			return;
 		}
 
 		workerGroup.shutdownGracefully();
-		channelPool.close();
+		channelGroup.close();
 	}
 
 	public final RpcClientOptions getOptions() {
