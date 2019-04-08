@@ -57,10 +57,10 @@ public class RpcClient {
 	}
 
 	private Bootstrap createBootstrap() {
-		Endpoint endpoint = options.getEndpoint();
 		Bootstrap b = new Bootstrap();
 		b.group(workerGroup);
 		b.channel(NioSocketChannel.class);
+		Endpoint endpoint = options.getEndpoint();
 		b.remoteAddress(endpoint.getIp(), endpoint.getPort());
 		b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, options.getConnectTimeoutMillis());
 		b.handler(new ChannelInitializer<Channel>() {
@@ -111,6 +111,7 @@ public class RpcClient {
 		}
 		return (IFuture<T>) future;
 	}
+	
 	public void close() {
 		if (!closed.compareAndSet(false, true)) {
 			return;

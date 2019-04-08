@@ -32,6 +32,7 @@ public class ChannelGroup {
 	private final HealthChecker healthChecker;
 	private final AtomicBoolean closed = new AtomicBoolean();
 
+	// 正在创建的连接的数量
 	private final AtomicInteger connectingCount = new AtomicInteger();
 
 	public ChannelGroup(Endpoint endpoint, Bootstrap bootstrap, int maxConnections, HealthChecker healthChecker)
@@ -79,6 +80,7 @@ public class ChannelGroup {
 				fill(maxConnections);
 				LockSupport.parkNanos(TimeUnit.MICROSECONDS.toNanos(1));
 			} else if (!healthChecker.isHealthy(channel)) {
+				channel.close();
 				fill(1);
 			} else {
 				channels.offer(channel);
