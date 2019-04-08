@@ -24,7 +24,7 @@ import lrpc.common.protocol.InitializeMessage;
 import lrpc.common.protocol.RpcMessage;
 import lrpc.common.protocol.RpcRequest;
 import lrpc.common.protocol.RpcResponse;
-import lrpc.common.serialize.KryoSerializer;
+import lrpc.common.serialize.ISerializer;
 
 /**
  * 2 bytes of magic
@@ -39,6 +39,12 @@ import lrpc.common.serialize.KryoSerializer;
 public class Decoder extends ByteToMessageDecoder {
 
 	private static final Logger logger = LoggerFactory.getLogger(Decoder.class);
+	
+	private final ISerializer serializer;
+	
+	public Decoder(ISerializer serializer) {
+		this.serializer = serializer;
+	}
 	
 	@Override
 	protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
@@ -63,7 +69,7 @@ public class Decoder extends ByteToMessageDecoder {
 		
 		Object data = dataBytes;
 		if (dataBytes != null && dataBytes.length > 0) {
-			data = KryoSerializer.INSTANCE.deserialize(dataBytes);
+			data = serializer.deserialize(dataBytes);
 		}
 		if (type == TYPE_INVOKE_REQUEST) {
 			out.add(new RpcRequest(id, (Invocation) data));

@@ -23,6 +23,8 @@ import io.netty.handler.timeout.IdleStateHandler;
 import lrpc.common.RpcException;
 import lrpc.common.codec.Decoder;
 import lrpc.common.codec.Encoder;
+import lrpc.common.serialize.ISerializer;
+import lrpc.util.ExtensionLoader;
 import lrpc.util.concurrent.DefaultPromise;
 import lrpc.util.concurrent.IFuture;
 import lrpc.util.concurrent.NamedThreadFactory;
@@ -81,8 +83,9 @@ public class RpcServer extends ServiceRepository {
 				});
 				ChannelPipeline pl = ch.pipeline();
 				pl.addLast(new IdleStateHandler(options.getHeartbeatInterval() * 2, 0, 0, TimeUnit.MILLISECONDS));
-				pl.addLast(new Decoder());
-				pl.addLast(new Encoder());
+				ISerializer serializer = ExtensionLoader.getLoader(ISerializer.class).getExtension(options.getSerializer());
+				pl.addLast(new Decoder(serializer));
+				pl.addLast(new Encoder(serializer));
 				pl.addLast(new RequestHandler(RpcServer.this));
 			}
 		});

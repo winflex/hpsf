@@ -18,6 +18,11 @@ public class RpcServerOptions {
 	private int heartbeatInterval = 10000;
 	
 	private Executor executor;
+	
+	/**
+	 * 序列化扩展点名字, 默认使用kryo序列化
+	 */
+	private String serializer = "kryo";
 
 	public RpcServerOptions(int port) {
 		if (port <= 0) {
@@ -64,5 +69,16 @@ public class RpcServerOptions {
 
 	public void setExecutor(Executor executor) {
 		this.executor = executor;
+	}
+
+	public String getSerializer() {
+		return serializer;
+	}
+
+	public void setSerializer(String serializer) {
+		if (serializer == null) {
+			throw new IllegalArgumentException("The serializer can't be null");
+		}
+		this.serializer = serializer;
 	}
 }

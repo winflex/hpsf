@@ -20,15 +20,15 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lrpc.client.proxy.IProxyFactory;
-import lrpc.client.proxy.JdkProxyFactory;
 import lrpc.common.Invocation;
-import lrpc.common.RpcException;
 import lrpc.common.codec.Decoder;
 import lrpc.common.codec.Encoder;
 import lrpc.common.protocol.RpcRequest;
+import lrpc.common.serialize.ISerializer;
 import lrpc.util.ChannelGroup;
 import lrpc.util.ChannelGroup.HealthChecker;
 import lrpc.util.Endpoint;
+import lrpc.util.ExtensionLoader;
 import lrpc.util.concurrent.IFuture;
 
 /**
@@ -77,16 +77,17 @@ public class RpcClient {
 				});
 
 				ChannelPipeline pl = ch.pipeline();
-				pl.addLast(new Decoder());
-				pl.addLast(new Encoder());
+				ISerializer serializer = ExtensionLoader.getLoader(ISerializer.class).getExtension(options.getSerializer());
+				pl.addLast(new Decoder(serializer));
+				pl.addLast(new Encoder(serializer));
 				pl.addLast(new ResponseHandler());
 			}
 		});
 		return b;
 	}
 
-	public <T> T getProxy(Class<T> iface) throws RpcException {
-		IProxyFactory proxyFactory = new JdkProxyFactory();
+	public <T> T getProxy(Class<T> iface) throws Exception {
+		IProxyFactory proxyFactory = ExtensionLoader.getLoader(IProxyFactory.class).getExtension(options.getProxy());
 		return (T) proxyFactory.getProxy(new ClientInvoker<>(iface, this));
 	}
 

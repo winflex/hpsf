@@ -1,6 +1,7 @@
 package lrpc.client;
 
 import lrpc.util.Endpoint;
+import lrpc.util.StringUtils;
 
 /**
  * 
@@ -17,6 +18,16 @@ public class RpcClientOptions {
 	private int requestTimeoutMillis = Integer.MAX_VALUE; // default to forever
 	
 	private int maxConnections = 1;
+	
+	/**
+	 * 序列化扩展点名字, 默认使用kryo序列化
+	 */
+	private String serializer = "kryo";
+	
+	/**
+	 * 动态代理扩展点名字, 内置使用jdk
+	 */
+	private String proxy = "jdk";
 
 	
 	public RpcClientOptions(Endpoint endpoint) {
@@ -71,5 +82,27 @@ public class RpcClientOptions {
 			throw new IllegalArgumentException("The invokeTimeoutMillis must be positive");
 		}
 		this.requestTimeoutMillis = invokeTimeoutMillis;
+	}
+
+	public String getSerializer() {
+		return serializer;
+	}
+
+	public void setSerializer(String serializer) {
+		if (StringUtils.isEmpty(serializer)) {
+			throw new IllegalArgumentException("The serializer can't be null");
+		}
+		this.serializer = serializer;
+	}
+
+	public String getProxy() {
+		return proxy;
+	}
+
+	public void setProxy(String proxy) {
+		if (StringUtils.isEmpty(proxy)) {
+			throw new IllegalArgumentException("The proxy can't be null");
+		}
+		this.proxy = proxy;
 	}
 }

@@ -1,0 +1,1 @@
+kryo=lrpc.common.serialize.KryoSerializer
