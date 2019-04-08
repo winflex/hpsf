@@ -3,12 +3,16 @@
  */
 package lrpc.common;
 
+import java.io.Serializable;
+
 /**
  *
  * @author winflex
  */
-public class RpcResult {
+public class RpcResult implements Serializable {
 	
+	private static final long serialVersionUID = 5849606699245716833L;
+
 	private Object result;
 	
 	private Throwable cause;

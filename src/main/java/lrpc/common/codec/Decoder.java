@@ -43,9 +43,8 @@ public class Decoder extends ByteToMessageDecoder {
 	@Override
 	protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
 		int readableBytes = in.readableBytes();
-		
 		// not a full packet
-		if (readableBytes < HEADER_LENGTH && readableBytes < HEADER_LENGTH + in.getInt(BODY_LENGTH_OFFSET)) {
+		if (readableBytes < HEADER_LENGTH || readableBytes < (HEADER_LENGTH + in.getInt(BODY_LENGTH_OFFSET))) {
 			return;
 		}
 		
