@@ -5,6 +5,7 @@ import java.util.concurrent.Executor;
 import lrpc.util.concurrent.SynchronousExecutor;
 
 /**
+ * 服务仓库
  * 
  * @author winflex
  */

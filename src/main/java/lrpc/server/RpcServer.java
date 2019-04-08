@@ -28,6 +28,7 @@ import lrpc.util.concurrent.IFuture;
 import lrpc.util.concurrent.NamedThreadFactory;
 
 /**
+ * RPC 服务器实现
  * 
  * @author winflex
  */

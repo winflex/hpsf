@@ -3,6 +3,7 @@ package lrpc.server;
 import java.util.concurrent.Executor;
 
 /**
+ * RPC服务器配置
  * 
  * @author winflex
  */

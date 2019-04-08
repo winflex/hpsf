@@ -3,7 +3,7 @@ package lrpc.common.codec;
 import static lrpc.common.codec.CodecConstants.BODY_LENGTH_OFFSET;
 import static lrpc.common.codec.CodecConstants.HEADER_LENGTH;
 import static lrpc.common.codec.CodecConstants.MAGIC;
-import static lrpc.common.protocol.RpcMessage.TYPE_HEARTBEAT_REQUEST;
+import static lrpc.common.protocol.RpcMessage.TYPE_HEARTBEAT;
 import static lrpc.common.protocol.RpcMessage.TYPE_INITIALIZE;
 import static lrpc.common.protocol.RpcMessage.TYPE_INVOKE_REQUEST;
 import static lrpc.common.protocol.RpcMessage.TYPE_INVOKE_RESPONSE;
@@ -70,7 +70,7 @@ public class Decoder extends ByteToMessageDecoder {
 			out.add(new RpcRequest(id, (Invocation) data));
 		} else if (type == TYPE_INVOKE_RESPONSE) {
 			out.add(new RpcResponse(id, (RpcResult) data));
-		} else if (type == TYPE_HEARTBEAT_REQUEST) {
+		} else if (type == TYPE_HEARTBEAT) {
 			out.add(new HeartbeatMessage());
 		} else if (type == TYPE_INITIALIZE) {
 			out.add(new InitializeMessage((ServerInfo) data));

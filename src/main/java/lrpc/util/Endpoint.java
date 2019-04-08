@@ -11,12 +11,9 @@ public class Endpoint implements Serializable {
 
 	private static final long serialVersionUID = 6780623948082682620L;
 
-	private String ip;
-	private int port;
+	private final String ip;
+	private final int port;
 	private String str;
-
-	public Endpoint() {
-	}
 
 	public Endpoint(String address, int port) {
 		this.ip = address;

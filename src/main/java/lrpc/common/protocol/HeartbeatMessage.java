@@ -10,6 +10,6 @@ public class HeartbeatMessage extends RpcMessage<Void> {
 
 	
 	public HeartbeatMessage() {
-		setType(TYPE_HEARTBEAT_REQUEST);
+		setType(TYPE_HEARTBEAT);
 	}
 }

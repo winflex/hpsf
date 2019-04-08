@@ -17,7 +17,7 @@ public class MessageFactory {
 			return new RpcRequest((Invocation) data);
 		} else if (type == TYPE_INVOKE_RESPONSE) {
 			return new RpcResponse(id, (RpcResult) data);
-		} else if (type == TYPE_HEARTBEAT_REQUEST) {
+		} else if (type == TYPE_HEARTBEAT) {
 			return new HeartbeatMessage();
 		} else if (type == TYPE_INITIALIZE) {
 			return new InitializeMessage((ServerInfo) data);

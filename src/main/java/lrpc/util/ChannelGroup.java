@@ -1,9 +1,11 @@
 package lrpc.util;
 
+import static lrpc.util.TimeUtils.*;
 import java.io.IOException;
 import java.util.Deque;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
@@ -65,13 +67,13 @@ public class ChannelGroup {
 		return bootstrap.connect(endpoint.getIp(), endpoint.getPort());
 	}
 
-	public Channel getChannel(int timeoutMillis) {
+	public Channel getChannel(int timeoutMillis) throws TimeoutException {
 		if (closed.get()) {
 			throw new IllegalStateException("Already closed");
 		}
 
-		// TODO timeout feature
-		while (true) {
+		final long startTime = currentTime();
+		do {
 			Channel channel = channels.poll();
 			if (channel == null) {
 				fill(maxConnections);
@@ -82,7 +84,9 @@ public class ChannelGroup {
 				channels.offer(channel);
 				return channel;
 			}
-		}
+		} while (elapsedMillis(startTime) < timeoutMillis);
+		
+		throw new TimeoutException("timed out after " + elapsedMillis(startTime) + "ms");
 	}
 
 	private synchronized void fill(final int need) {
@@ -113,7 +117,7 @@ public class ChannelGroup {
 		}
 	}
 
-	public boolean isClosed() {
+	public final boolean isClosed() {
 		return this.closed.get();
 	}
 

@@ -39,8 +39,10 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 	@Override
 	protected void channelRead0(ChannelHandlerContext ctx, RpcMessage<?> req) throws Exception {
 		if (req instanceof RpcRequest) {
+			// RPC调用
 			handleInvocation(ctx, (RpcRequest) req);
 		} else if (req instanceof HeartbeatMessage) {
+			// 心跳
 			handleHeartbeat(ctx, (HeartbeatMessage) req);
 		} else {
 			logger.warn("Recieved unexpected message(type={}) on channel({})", req.getType(), ctx.channel());
@@ -50,6 +52,7 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
+		// 客户端连接后, 回写一个初始化报文, 携带一些信息, 如心跳间隔等
 		ServerInfo info = new ServerInfo();
 		info.setHeartbeatIntervalMillis(rpcServer.getOptions().getHeartbeatInterval());
 		ctx.writeAndFlush(new InitializeMessage(info));
@@ -58,6 +61,7 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 	@Override
 	public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
 		if (evt instanceof IdleStateEvent) {
+			// 心跳超时, 关闭连接
 			logger.warn("Channel has passed idle timeout, channel = {}", ctx.channel());
 			ctx.close();
 		}
@@ -73,7 +77,7 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 	}
 
 	/**
-	 * reply to the channel with invocation result.
+	 * rpc调用正常完成时调用此方法响应客户端
 	 */
 	private void replyWithResult(Channel ch, long id, Object data) {
 		RpcResult result = new RpcResult();
@@ -82,7 +86,7 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 	}
 
 	/**
-	 * reply to the channel with exception.
+	 * rpc调用异常完成时调用此方法响应客户端
 	 */
 	private ChannelFuture replyWithException(Channel ch, long id, Throwable cause) {
 		RpcResult result = new RpcResult();
