@@ -11,8 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -70,16 +68,13 @@ public class RpcClient {
 			@Override
 			protected void initChannel(Channel ch) throws Exception {
 				logger.info("Channel connected, channel = {}", ch);
-				ch.closeFuture().addListener(new ChannelFutureListener() {
-
-					@Override
-					public void operationComplete(ChannelFuture future) throws Exception {
-						logger.info("Channel disconnected, channel = {}", ch);
-					}
+				ch.closeFuture().addListener((future) -> {
+					logger.info("Channel disconnected, channel = {}", ch);
 				});
 
 				ChannelPipeline pl = ch.pipeline();
-				ISerializer serializer = ExtensionLoader.getLoader(ISerializer.class).getExtension(options.getSerializer());
+				ISerializer serializer = ExtensionLoader.getLoader(ISerializer.class)
+						.getExtension(options.getSerializer());
 				pl.addLast(new Decoder(serializer));
 				pl.addLast(new Encoder(serializer));
 				pl.addLast(new ResponseHandler());
@@ -100,13 +95,9 @@ public class RpcClient {
 		final ResponseFuture future = new ResponseFuture(requestId, options.getRequestTimeoutMillis());
 		try {
 			Channel channel = channelGroup.getChannel(options.getConnectTimeoutMillis());
-			channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
-
-				@Override
-				public void operationComplete(ChannelFuture f) throws Exception {
-					if (!f.isSuccess()) {
-						ResponseFuture.doneWithException(requestId, f.cause());
-					}
+			channel.writeAndFlush(request).addListener((f) -> {
+				if (!f.isSuccess()) {
+					ResponseFuture.doneWithException(requestId, f.cause());
 				}
 			});
 		} catch (Exception e) {
@@ -114,7 +105,7 @@ public class RpcClient {
 		}
 		return (IFuture<T>) future;
 	}
-	
+
 	public void close() {
 		if (!closed.compareAndSet(false, true)) {
 			return;

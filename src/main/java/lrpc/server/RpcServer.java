@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
@@ -74,12 +73,8 @@ public class RpcServer extends DefaultRegistryCenter {
 			@Override
 			protected void initChannel(NioSocketChannel ch) throws Exception {
 				logger.info("Channel connected, channel = {}", ch);
-				ch.closeFuture().addListener(new ChannelFutureListener() {
-
-					@Override
-					public void operationComplete(ChannelFuture future) throws Exception {
-						logger.info("Channel disconnected, channel = {}", ch);
-					}
+				ch.closeFuture().addListener((future) -> {
+					logger.info("Channel disconnected, channel = {}", ch);
 				});
 				ChannelPipeline pl = ch.pipeline();
 				pl.addLast(new IdleStateHandler(options.getHeartbeatInterval() * 2, 0, 0, TimeUnit.MILLISECONDS));

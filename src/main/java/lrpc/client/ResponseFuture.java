@@ -26,7 +26,7 @@ public class ResponseFuture extends DefaultPromise<Object> {
 	private static final Logger logger = LoggerFactory.getLogger(ResponseFuture.class);
 
 	private static final ConcurrentMap<Long, ResponseFuture> inflightFutures = new ConcurrentHashMap<>();
-	
+
 	private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
 			new NamedThreadFactory("ResponseFuture-Watchdog", true));
 
@@ -50,11 +50,9 @@ public class ResponseFuture extends DefaultPromise<Object> {
 		future.setFailure(cause);
 	}
 
-	
 	private final long requestId;
-	
+
 	private final ScheduledFuture<?> timeoutFuture;
-	
 
 	public ResponseFuture(long requestId, int timeoutMillis) {
 		if (timeoutMillis <= 0) {
@@ -62,20 +60,15 @@ public class ResponseFuture extends DefaultPromise<Object> {
 		}
 		this.requestId = requestId;
 		inflightFutures.put(requestId, this);
-		this.timeoutFuture = scheduler.schedule(new Runnable() {
-			
-			@Override
-			public void run() {
-				// timed out
-				setFailure(new TimeoutException("timed out after " + timeoutMillis + "ms"));
-			}
+		this.timeoutFuture = scheduler.schedule(() -> {
+			setFailure(new TimeoutException("timed out after " + timeoutMillis + "ms"));
 		}, timeoutMillis, TimeUnit.MILLISECONDS);
 	}
 
 	private void cancelTimeoutTask() {
 		timeoutFuture.cancel(true);
 	}
-	
+
 	public final long getRequestId() {
 		return requestId;
 	}
