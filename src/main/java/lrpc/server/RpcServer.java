@@ -130,7 +130,7 @@ public class RpcServer extends DefaultRegistryCenter {
 	}
 	
 	@Override
-	public synchronized void register(Class<?> iface, Object instance, Executor executor) {
+	public void register(Class<?> iface, Object instance, Executor executor) {
 		super.register(iface, instance, executor);
 		logger.info("Published interface {}, instance = {}", iface, instance);
 	}
