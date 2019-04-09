@@ -9,12 +9,24 @@ import java.util.concurrent.Executor;
  */
 public class RpcServerOptions {
 
+	/**
+	 * RPC 服务端监听端口
+	 */
 	private int port;
 
+	/**
+	 * RPC服务端监听地址
+	 */
 	private String bindIp = "0.0.0.0";
 
+	/**
+	 * IO线程数
+	 */
 	private int ioThreads = 0;
 
+	/**
+	 * 心跳间隔
+	 */
 	private int heartbeatInterval = 10000;
 	
 	private Executor executor;

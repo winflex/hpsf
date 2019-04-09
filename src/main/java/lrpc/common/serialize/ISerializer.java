@@ -3,6 +3,7 @@ package lrpc.common.serialize;
 import java.io.IOException;
 
 /**
+ * 序列化/反序列化接口定义
  * 
  * @author winflex
  */

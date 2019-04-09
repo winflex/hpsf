@@ -4,7 +4,7 @@ import static lrpc.common.codec.CodecConstants.BODY_LENGTH_OFFSET;
 import static lrpc.common.codec.CodecConstants.HEADER_LENGTH;
 import static lrpc.common.codec.CodecConstants.MAGIC;
 import static lrpc.common.protocol.RpcMessage.TYPE_HEARTBEAT;
-import static lrpc.common.protocol.RpcMessage.TYPE_INITIALIZE;
+import static lrpc.common.protocol.RpcMessage.TYPE_SYNC;
 import static lrpc.common.protocol.RpcMessage.TYPE_INVOKE_REQUEST;
 import static lrpc.common.protocol.RpcMessage.TYPE_INVOKE_RESPONSE;
 
@@ -20,7 +20,7 @@ import lrpc.common.Invocation;
 import lrpc.common.RpcResult;
 import lrpc.common.ServerInfo;
 import lrpc.common.protocol.HeartbeatMessage;
-import lrpc.common.protocol.InitializeMessage;
+import lrpc.common.protocol.SyncMessage;
 import lrpc.common.protocol.RpcMessage;
 import lrpc.common.protocol.RpcRequest;
 import lrpc.common.protocol.RpcResponse;
@@ -77,8 +77,8 @@ public class Decoder extends ByteToMessageDecoder {
 			out.add(new RpcResponse(id, (RpcResult) data));
 		} else if (type == TYPE_HEARTBEAT) {
 			out.add(new HeartbeatMessage());
-		} else if (type == TYPE_INITIALIZE) {
-			out.add(new InitializeMessage((ServerInfo) data));
+		} else if (type == TYPE_SYNC) {
+			out.add(new SyncMessage((ServerInfo) data));
 		} else {
 			RpcMessage<Object> rawMessage = new RpcMessage<>();
 			rawMessage.setType(type);

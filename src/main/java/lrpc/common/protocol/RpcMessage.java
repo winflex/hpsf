@@ -13,7 +13,7 @@ public class RpcMessage<T> implements Serializable {
 	public static final byte TYPE_INVOKE_REQUEST = 1;
 	public static final byte TYPE_INVOKE_RESPONSE = -1;
 	public static final byte TYPE_HEARTBEAT = 2;
-	public static final byte TYPE_INITIALIZE = 3;
+	public static final byte TYPE_SYNC = 3;
 	
 	private byte type;
 	private long id;

@@ -4,19 +4,35 @@ import lrpc.util.Endpoint;
 import lrpc.util.StringUtils;
 
 /**
+ * RPC客户端配置
  * 
  * @author winflex
  */
 public class RpcClientOptions {
 	
-	private Endpoint endpoint;
+	/**
+	 * 服务端地址
+	 */
+	private Endpoint endpoint; 
 	
+	/**
+	 * io线程个数
+	 */
 	private int ioThreads;
 	
+	/**
+	 * 创建连接超时时间
+	 */
 	private int connectTimeoutMillis = 3000;
 	
+	/**
+	 * 请求超时时间
+	 */
 	private int requestTimeoutMillis = Integer.MAX_VALUE; // default to forever
 	
+	/**
+	 * 最大连接数
+	 */
 	private int maxConnections = 1;
 	
 	/**

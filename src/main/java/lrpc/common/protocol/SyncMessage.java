@@ -6,12 +6,12 @@ import lrpc.common.ServerInfo;
  * 
  * @author winflex
  */
-public class InitializeMessage extends RpcMessage<ServerInfo> {
+public class SyncMessage extends RpcMessage<ServerInfo> {
 
 	private static final long serialVersionUID = 1547128260024417442L;
 
-	public InitializeMessage(ServerInfo serverInfo) {
-		setType(TYPE_INITIALIZE);
+	public SyncMessage(ServerInfo serverInfo) {
+		setType(TYPE_SYNC);
 		setData(serverInfo);
 	}
 }

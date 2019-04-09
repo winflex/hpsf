@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import lrpc.common.IInvoker;
 import lrpc.common.Invocation;
 import lrpc.common.RpcException;
-import lrpc.server.IServiceRepository.Publishment;
+import lrpc.server.IRegistryCenter.Registry;
 
 /**
  * 本地调用
@@ -24,7 +24,7 @@ public class ServerInvoker<T> implements IInvoker<T> {
 
 	@Override
 	public Object invoke(Invocation inv) throws Throwable {
-		Publishment publishment = rpcServer.get(inv.getClassName());
+		Registry publishment = rpcServer.get(inv.getClassName());
 		if (publishment == null) {
 			throw new RpcException(inv.getClassName() + " is not published");
 		}

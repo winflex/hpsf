@@ -32,14 +32,16 @@ import lrpc.util.ExtensionLoader;
 import lrpc.util.concurrent.IFuture;
 
 /**
- *
+ * RPC客户端实现
+ * 
+ * 
  * @author winflex
  */
 public class RpcClient {
 
 	private static final Logger logger = LoggerFactory.getLogger(RpcClient.class);
 
-	private final RpcClientOptions options;
+	private final RpcClientOptions options; // 配置
 	private final EventLoopGroup workerGroup;
 	private final ChannelGroup channelGroup;
 

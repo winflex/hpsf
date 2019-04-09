@@ -5,30 +5,30 @@ import java.util.concurrent.Executor;
 import lrpc.util.concurrent.SynchronousExecutor;
 
 /**
- * 服务仓库
+ * 服务注册中心
  * 
  * @author winflex
  */
-public interface IServiceRepository {
+public interface IRegistryCenter {
 
-	default void publish(Class<?> iface, Object instance) {
-		publish(iface, instance, SynchronousExecutor.INSTANCE);
+	default void register(Class<?> iface, Object instance) {
+		register(iface, instance, SynchronousExecutor.INSTANCE);
 	}
 
-	void publish(Class<?> iface, Object instance, Executor executor);
+	void register(Class<?> iface, Object instance, Executor executor);
 
-	Publishment get(String iface);
-
-	default Publishment get(Class<?> iface) {
+	default Registry get(Class<?> iface) {
 		return get(iface.getName());
 	}
+	
+	Registry get(String iface);
 
-	public static final class Publishment {
+	public static final class Registry {
 		private final Class<?> iface;
 		private final Object instance;
 		private final Executor executor;
 
-		public Publishment(Class<?> iface, Object instance, Executor executor) {
+		public Registry(Class<?> iface, Object instance, Executor executor) {
 			this.iface = iface;
 			this.instance = instance;
 			this.executor = executor;

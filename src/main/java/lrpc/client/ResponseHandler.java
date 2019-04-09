@@ -11,7 +11,7 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import lrpc.common.RpcResult;
 import lrpc.common.protocol.HeartbeatMessage;
-import lrpc.common.protocol.InitializeMessage;
+import lrpc.common.protocol.SyncMessage;
 import lrpc.common.protocol.RpcMessage;
 import lrpc.common.protocol.RpcResponse;
 
@@ -35,9 +35,9 @@ public class ResponseHandler extends SimpleChannelInboundHandler<RpcMessage<?>> 
 			} else {
 				ResponseFuture.doneWithException(requestId, result.getCause());
 			}
-		} else if (resp instanceof InitializeMessage) {
+		} else if (resp instanceof SyncMessage) {
 			logger.debug("Recieved initialize message on channel({})", ctx.channel());
-			InitializeMessage msg = (InitializeMessage) resp;
+			SyncMessage msg = (SyncMessage) resp;
 			ctx.channel().pipeline().addFirst(new IdleStateHandler(0, 0, msg.getData().getHeartbeatIntervalMillis(), TimeUnit.MILLISECONDS));
 		} else {
 			logger.warn("Recieved unexpected message(type={}) on channel({})", resp.getType(), ctx.channel());

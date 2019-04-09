@@ -15,7 +15,7 @@ import lrpc.common.Invocation;
 import lrpc.common.RpcResult;
 import lrpc.common.ServerInfo;
 import lrpc.common.protocol.HeartbeatMessage;
-import lrpc.common.protocol.InitializeMessage;
+import lrpc.common.protocol.SyncMessage;
 import lrpc.common.protocol.RpcMessage;
 import lrpc.common.protocol.RpcRequest;
 import lrpc.common.protocol.RpcResponse;
@@ -52,10 +52,10 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
-		// 客户端连接后, 回写一个初始化报文, 携带一些信息, 如心跳间隔等
+		// 客户端连接后, 回写一个信息同步报文, 携带一些信息, 如心跳间隔等
 		ServerInfo info = new ServerInfo();
 		info.setHeartbeatIntervalMillis(rpcServer.getOptions().getHeartbeatInterval());
-		ctx.writeAndFlush(new InitializeMessage(info));
+		ctx.writeAndFlush(new SyncMessage(info));
 	}
 
 	@Override

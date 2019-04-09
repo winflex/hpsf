@@ -35,6 +35,9 @@ public class RpcContext {
 	
 	private Map<String, String> attachments = new HashMap<>();
 	
+	/**
+	 * 同步转异步调用
+	 */
 	@SuppressWarnings("unchecked")
 	public <T> IFuture<T> asyncCall(Callable<T> callable) {
 		this.async = true;

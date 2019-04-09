@@ -34,7 +34,7 @@ import lrpc.util.concurrent.NamedThreadFactory;
  * 
  * @author winflex
  */
-public class RpcServer extends ServiceRepository {
+public class RpcServer extends DefaultRegistryCenter {
 	private static final Logger logger = LoggerFactory.getLogger(RpcServer.class);
 
 	private final RpcServerOptions options;
@@ -130,8 +130,8 @@ public class RpcServer extends ServiceRepository {
 	}
 	
 	@Override
-	public synchronized void publish(Class<?> iface, Object instance, Executor executor) {
-		super.publish(iface, instance, executor);
+	public synchronized void register(Class<?> iface, Object instance, Executor executor) {
+		super.register(iface, instance, executor);
 		logger.info("Published interface {}, instance = {}", iface, instance);
 	}
 
