@@ -38,10 +38,10 @@ public class RpcClientOptions {
 	/**
 	 * 序列化扩展点名字, 默认使用kryo序列化
 	 */
-	private String serializer = "kryo";
+	private String serializer = "hessian";
 	
 	/**
-	 * 动态代理扩展点名字, 内置使用jdk
+	 * 动态代理扩展点名字, 默认使用jdk
 	 */
 	private String proxy = "jdk";
 

@@ -28,6 +28,7 @@ import lrpc.util.ChannelGroup.HealthChecker;
 import lrpc.util.Endpoint;
 import lrpc.util.ExtensionLoader;
 import lrpc.util.concurrent.IFuture;
+import lrpc.util.concurrent.NamedThreadFactory;
 
 /**
  * RPC客户端实现
@@ -51,7 +52,7 @@ public class RpcClient {
 
 	public RpcClient(RpcClientOptions options) throws IOException {
 		this.options = options;
-		this.workerGroup = new NioEventLoopGroup(options.getIoThreads());
+		this.workerGroup = new NioEventLoopGroup(options.getIoThreads(), new NamedThreadFactory("Rpc-Client-IoWorker"));
 		this.channelGroup = new ChannelGroup(options.getEndpoint(), createBootstrap(), options.getMaxConnections(),
 				HealthChecker.ACTIVE);
 	}

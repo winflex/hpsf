@@ -34,7 +34,7 @@ public class RpcServerOptions {
 	/**
 	 * 序列化扩展点名字, 默认使用kryo序列化
 	 */
-	private String serializer = "kryo";
+	private String serializer = "hessian";
 
 	public RpcServerOptions(int port) {
 		if (port <= 0) {

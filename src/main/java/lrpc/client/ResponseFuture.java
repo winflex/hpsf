@@ -50,16 +50,16 @@ public class ResponseFuture extends DefaultPromise<Object> {
 		future.setFailure(cause);
 	}
 
-	private final long requestId;
+	private final long futureId;
 
 	private final ScheduledFuture<?> timeoutFuture;
 
-	public ResponseFuture(long requestId, int timeoutMillis) {
+	public ResponseFuture(long futureId, int timeoutMillis) {
 		if (timeoutMillis <= 0) {
 			throw new IllegalArgumentException("timeoutMillis must be positive");
 		}
-		this.requestId = requestId;
-		inflightFutures.put(requestId, this);
+		this.futureId = futureId;
+		inflightFutures.put(futureId, this);
 		this.timeoutFuture = scheduler.schedule(() -> {
 			setFailure(new TimeoutException("timed out after " + timeoutMillis + "ms"));
 		}, timeoutMillis, TimeUnit.MILLISECONDS);
@@ -70,6 +70,6 @@ public class ResponseFuture extends DefaultPromise<Object> {
 	}
 
 	public final long getRequestId() {
-		return requestId;
+		return futureId;
 	}
 }
