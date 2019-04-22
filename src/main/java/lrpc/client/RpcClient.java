@@ -53,16 +53,14 @@ public class RpcClient {
 	public RpcClient(RpcClientOptions options) throws IOException {
 		this.options = options;
 		this.workerGroup = new NioEventLoopGroup(options.getIoThreads(), new NamedThreadFactory("Rpc-Client-IoWorker"));
-		this.channelGroup = new ChannelGroup(options.getEndpoint(), createBootstrap(), options.getMaxConnections(),
-				HealthChecker.ACTIVE);
+		this.channelGroup = new ChannelGroup(createBootstrap(), options.getMaxConnections(), HealthChecker.ACTIVE);
 	}
 
 	private Bootstrap createBootstrap() {
 		Bootstrap b = new Bootstrap();
 		b.group(workerGroup);
 		b.channel(NioSocketChannel.class);
-		Endpoint endpoint = options.getEndpoint();
-		b.remoteAddress(endpoint.getIp(), endpoint.getPort());
+		b.remoteAddress(options.getEndpoint().toSocketAddress());
 		b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, options.getConnectTimeoutMillis());
 		b.handler(new ChannelInitializer<Channel>() {
 
