@@ -14,6 +14,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.flush.FlushConsolidationHandler;
 import lombok.extern.slf4j.Slf4j;
 import lrpc.client.proxy.IProxyFactory;
 import lrpc.common.Invocation;
@@ -71,6 +72,7 @@ public class RpcClient {
 				ChannelPipeline pl = ch.pipeline();
 				ISerializer serializer = ExtensionLoader.getLoader(ISerializer.class)
 						.getExtension(options.getSerializer());
+				pl.addLast(new FlushConsolidationHandler(256, true));
 				pl.addLast(new Decoder(serializer));
 				pl.addLast(new Encoder(serializer));
 				pl.addLast(new ResponseHandler());

@@ -15,6 +15,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.flush.FlushConsolidationHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 import lrpc.common.RpcException;
@@ -74,6 +75,7 @@ public class RpcServer extends DefaultRegistryCenter {
 					log.info("Channel disconnected, channel = {}", ch);
 				});
 				ChannelPipeline pl = ch.pipeline();
+				pl.addLast(new FlushConsolidationHandler(256, true));
 				pl.addLast(new IdleStateHandler(options.getHeartbeatInterval() * 2, 0, 0, TimeUnit.MILLISECONDS));
 				ISerializer serializer = ExtensionLoader.getLoader(ISerializer.class).getExtension(options.getSerializer());
 				pl.addLast(new Decoder(serializer));
