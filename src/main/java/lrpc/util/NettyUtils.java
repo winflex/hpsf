@@ -1,23 +1,20 @@
 package lrpc.util;
 
-import lrpc.common.protocol.RpcMessage;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import lombok.extern.slf4j.Slf4j;
+import lrpc.common.protocol.RpcMessage;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+@Slf4j
 public class NettyUtils {
-	
-	private static final Logger logger = LoggerFactory.getLogger(NettyUtils.class);
 	
 	public static final ChannelFutureListener li = new ChannelFutureListener() {
 		
 		@Override
 		public void operationComplete(ChannelFuture future) throws Exception {
 			if (!future.isSuccess()) {
-				logger.error("write message failed", future.cause());
+				log.error("write message failed", future.cause());
 			}
 		}
 	};

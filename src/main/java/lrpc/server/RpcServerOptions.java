@@ -2,38 +2,26 @@ package lrpc.server;
 
 import java.util.concurrent.Executor;
 
+import lombok.Data;
+
 /**
  * RPC服务器配置
  * 
  * @author winflex
  */
+@Data
 public class RpcServerOptions {
 
-	/**
-	 * RPC 服务端监听端口
-	 */
 	private int port;
 
-	/**
-	 * RPC服务端监听地址
-	 */
 	private String bindIp = "0.0.0.0";
 
-	/**
-	 * IO线程数
-	 */
 	private int ioThreads = 0;
 
-	/**
-	 * 心跳间隔
-	 */
 	private int heartbeatInterval = 10000;
 	
 	private Executor executor;
 	
-	/**
-	 * 序列化扩展点名字, 默认使用kryo序列化
-	 */
 	private String serializer = "hessian";
 
 	public RpcServerOptions(int port) {
@@ -41,50 +29,6 @@ public class RpcServerOptions {
 			throw new IllegalArgumentException("port must be positive");
 		}
 		this.port = port;
-	}
-
-	public int getPort() {
-		return port;
-	}
-
-	public void setPort(int port) {
-		this.port = port;
-	}
-
-	public String getBindIp() {
-		return bindIp;
-	}
-
-	public void setBindIp(String bindIp) {
-		this.bindIp = bindIp;
-	}
-
-	public int getIoThreads() {
-		return ioThreads;
-	}
-
-	public void setIoThreads(int ioThreads) {
-		this.ioThreads = ioThreads;
-	}
-
-	public int getHeartbeatInterval() {
-		return heartbeatInterval;
-	}
-
-	public void setHeartbeatInterval(int heartbeatInterval) {
-		this.heartbeatInterval = heartbeatInterval;
-	}
-
-	public Executor getExecutor() {
-		return executor;
-	}
-
-	public void setExecutor(Executor executor) {
-		this.executor = executor;
-	}
-
-	public String getSerializer() {
-		return serializer;
 	}
 
 	public void setSerializer(String serializer) {

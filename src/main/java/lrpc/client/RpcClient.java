@@ -6,9 +6,6 @@ package lrpc.client;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -17,6 +14,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import lombok.extern.slf4j.Slf4j;
 import lrpc.client.proxy.IProxyFactory;
 import lrpc.common.Invocation;
 import lrpc.common.codec.Decoder;
@@ -36,9 +34,8 @@ import lrpc.util.concurrent.NamedThreadFactory;
  * 
  * @author winflex
  */
+@Slf4j
 public class RpcClient {
-
-	private static final Logger logger = LoggerFactory.getLogger(RpcClient.class);
 
 	private final RpcClientOptions options; // 配置
 	private final EventLoopGroup workerGroup;
@@ -66,9 +63,9 @@ public class RpcClient {
 
 			@Override
 			protected void initChannel(Channel ch) throws Exception {
-				logger.info("Channel connected, channel = {}", ch);
+				log.info("Channel connected, channel = {}", ch);
 				ch.closeFuture().addListener((future) -> {
-					logger.info("Channel disconnected, channel = {}", ch);
+					log.info("Channel disconnected, channel = {}", ch);
 				});
 
 				ChannelPipeline pl = ch.pipeline();

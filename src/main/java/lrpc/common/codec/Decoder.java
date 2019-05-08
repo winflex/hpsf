@@ -4,26 +4,24 @@ import static lrpc.common.codec.CodecConstants.BODY_LENGTH_OFFSET;
 import static lrpc.common.codec.CodecConstants.HEADER_LENGTH;
 import static lrpc.common.codec.CodecConstants.MAGIC;
 import static lrpc.common.protocol.RpcMessage.TYPE_HEARTBEAT;
-import static lrpc.common.protocol.RpcMessage.TYPE_SYNC;
 import static lrpc.common.protocol.RpcMessage.TYPE_INVOKE_REQUEST;
 import static lrpc.common.protocol.RpcMessage.TYPE_INVOKE_RESPONSE;
+import static lrpc.common.protocol.RpcMessage.TYPE_SYNC;
 
 import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import lombok.extern.slf4j.Slf4j;
 import lrpc.common.Invocation;
 import lrpc.common.RpcResult;
 import lrpc.common.ServerInfo;
 import lrpc.common.protocol.HeartbeatMessage;
-import lrpc.common.protocol.SyncMessage;
 import lrpc.common.protocol.RpcMessage;
 import lrpc.common.protocol.RpcRequest;
 import lrpc.common.protocol.RpcResponse;
+import lrpc.common.protocol.SyncMessage;
 import lrpc.common.serialize.ISerializer;
 
 /**
@@ -36,10 +34,9 @@ import lrpc.common.serialize.ISerializer;
  * @author winflex
  * 
  */
+@Slf4j
 public class Decoder extends ByteToMessageDecoder {
 
-	private static final Logger logger = LoggerFactory.getLogger(Decoder.class);
-	
 	private final ISerializer serializer;
 	
 	public Decoder(ISerializer serializer) {
@@ -55,7 +52,7 @@ public class Decoder extends ByteToMessageDecoder {
 		}
 		
 		if (in.readShort() != MAGIC) {
-			logger.error("Recieved an unknown packet, the channel({}) will be closed", ctx.channel());
+			log.error("Recieved an unknown packet, the channel({}) will be closed", ctx.channel());
 			return;
 		}
 		

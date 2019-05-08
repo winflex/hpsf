@@ -6,9 +6,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -19,6 +16,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
+import lombok.extern.slf4j.Slf4j;
 import lrpc.common.RpcException;
 import lrpc.common.codec.Decoder;
 import lrpc.common.codec.Encoder;
@@ -33,9 +31,8 @@ import lrpc.util.concurrent.NamedThreadFactory;
  * 
  * @author winflex
  */
+@Slf4j
 public class RpcServer extends DefaultRegistryCenter {
-	private static final Logger logger = LoggerFactory.getLogger(RpcServer.class);
-
 	private final RpcServerOptions options;
 	private final Executor executor;
 
@@ -72,9 +69,9 @@ public class RpcServer extends DefaultRegistryCenter {
 
 			@Override
 			protected void initChannel(NioSocketChannel ch) throws Exception {
-				logger.info("Channel connected, channel = {}", ch);
+				log.info("Channel connected, channel = {}", ch);
 				ch.closeFuture().addListener((future) -> {
-					logger.info("Channel disconnected, channel = {}", ch);
+					log.info("Channel disconnected, channel = {}", ch);
 				});
 				ChannelPipeline pl = ch.pipeline();
 				pl.addLast(new IdleStateHandler(options.getHeartbeatInterval() * 2, 0, 0, TimeUnit.MILLISECONDS));
@@ -90,7 +87,7 @@ public class RpcServer extends DefaultRegistryCenter {
 
 		if (f.isSuccess()) {
 			this.serverChannel = f.channel();
-			logger.info("Server listening on {}:{}", options.getBindIp(), options.getPort());
+			log.info("Server listening on {}:{}", options.getBindIp(), options.getPort());
 		} else {
 			throw new RpcException(f.cause());
 		}
@@ -117,7 +114,7 @@ public class RpcServer extends DefaultRegistryCenter {
 				((ThreadPoolExecutor) executor).shutdownNow();
 			}
 	
-			logger.info("Server shutdown");
+			log.info("Server shutdown");
 			closeFuture.setSuccess(null);
 		} catch (Throwable e) {
 			closeFuture.setFailure(e);
@@ -127,7 +124,7 @@ public class RpcServer extends DefaultRegistryCenter {
 	@Override
 	public void register(Class<?> iface, Object instance, Executor executor) {
 		super.register(iface, instance, executor);
-		logger.info("Published interface {}, instance = {}", iface, instance);
+		log.info("Published interface {}, instance = {}", iface, instance);
 	}
 
 	public final Executor getExecutor() {

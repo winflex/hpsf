@@ -2,32 +2,29 @@ package lrpc.server;
 
 import static lrpc.util.NettyUtils.writeAndFlush;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleStateEvent;
+import lombok.extern.slf4j.Slf4j;
 import lrpc.common.IInvoker;
 import lrpc.common.Invocation;
 import lrpc.common.RpcResult;
 import lrpc.common.ServerInfo;
 import lrpc.common.protocol.HeartbeatMessage;
-import lrpc.common.protocol.SyncMessage;
 import lrpc.common.protocol.RpcMessage;
 import lrpc.common.protocol.RpcRequest;
 import lrpc.common.protocol.RpcResponse;
+import lrpc.common.protocol.SyncMessage;
 
 /**
  * 
  *
  * @author winflex
  */
+@Slf4j
 public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
-
-	private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
 
 	private final RpcServer rpcServer;
 
@@ -45,7 +42,7 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 			// 心跳
 			handleHeartbeat(ctx, (HeartbeatMessage) req);
 		} else {
-			logger.warn("Recieved unexpected message(type={}) on channel({})", req.getType(), ctx.channel());
+			log.warn("Recieved unexpected message(type={}) on channel({})", req.getType(), ctx.channel());
 			ctx.close();
 		}
 	}
@@ -62,17 +59,17 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 	public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
 		if (evt instanceof IdleStateEvent) {
 			// 心跳超时, 关闭连接
-			logger.warn("Channel has passed idle timeout, channel = {}", ctx.channel());
+			log.warn("Channel has passed idle timeout, channel = {}", ctx.channel());
 			ctx.close();
 		}
 	}
 
 	private void handleHeartbeat(ChannelHandlerContext ctx, HeartbeatMessage req) {
-		logger.debug("Recieved heartbeat message on channel({})", ctx.channel());
+		log.debug("Recieved heartbeat message on channel({})", ctx.channel());
 	}
 
 	private void handleInvocation(ChannelHandlerContext ctx, RpcRequest req) {
-		logger.debug("Recieved request message on channel({})", ctx.channel());
+		log.debug("Recieved request message on channel({})", ctx.channel());
 		rpcServer.getExecutor().execute(new InvocationTask(ctx.channel(), req));
 	}
 
@@ -112,7 +109,7 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 				Object result = invoker.invoke(inv);
 				replyWithResult(ch, request.getId(), result);
 			} catch (Throwable e) {
-				logger.error("Invocation({}) on channel({}) failed, cause: {}", request.getData(), ch, e.getMessage());
+				log.error("Invocation({}) on channel({}) failed, cause: {}", request.getData(), ch, e.getMessage());
 				replyWithException(ch, request.getId(), e);
 			}
 		}

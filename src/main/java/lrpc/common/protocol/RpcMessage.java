@@ -2,10 +2,13 @@ package lrpc.common.protocol;
 
 import java.io.Serializable;
 
+import lombok.Data;
+
 /**
  * 
  * @author winflex
  */
+@Data
 public class RpcMessage<T> implements Serializable {
 	
 	private static final long serialVersionUID = -8323120792660898305L;
@@ -18,38 +21,4 @@ public class RpcMessage<T> implements Serializable {
 	private byte type;
 	private long id;
 	private T data;
-	
-//	public RpcMessage() {
-//	}
-//
-//	public RpcMessage(byte type, long id, Object data) {
-//		this.type = type;
-//		this.id = id;
-//		this.data = data;
-//	}
-
-	public byte getType() {
-		return type;
-	}
-
-	public void setType(byte type) {
-		this.type = type;
-	}
-
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
-
-	public T getData() {
-		return data;
-	}
-
-	public void setData(T data) {
-		this.data = data;
-	}
-	
 }
