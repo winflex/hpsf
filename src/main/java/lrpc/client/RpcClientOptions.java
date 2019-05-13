@@ -2,7 +2,6 @@ package lrpc.client;
 
 import lombok.Data;
 import lrpc.util.Endpoint;
-import lrpc.util.StringUtils;
 
 /**
  * RPC客户端配置
@@ -52,14 +51,14 @@ public class RpcClientOptions {
 	}
 
 	public void setSerializer(String serializer) {
-		if (StringUtils.isEmpty(serializer)) {
+		if (serializer == null || serializer.isEmpty()) {
 			throw new IllegalArgumentException("The serializer can't be null");
 		}
 		this.serializer = serializer;
 	}
 
 	public void setProxy(String proxy) {
-		if (StringUtils.isEmpty(proxy)) {
+		if (proxy == null || proxy.isEmpty()) {
 			throw new IllegalArgumentException("The proxy can't be null");
 		}
 		this.proxy = proxy;
