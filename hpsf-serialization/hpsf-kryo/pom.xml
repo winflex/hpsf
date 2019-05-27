@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>io.hpsf</groupId>
+		<artifactId>hpsf-serialization</artifactId>
+		<version>1.0</version>
+	</parent>
+	<artifactId>hpsf-kryo</artifactId>
+	<name>hpsf-kryo</name>
+
+	<properties>
+		<kryo.version>4.0.2</kryo.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>hpsf-serialization-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.esotericsoftware</groupId>
+			<artifactId>kryo</artifactId>
+			<version>${kryo.version}</version>
+		</dependency>
+	</dependencies>
+</project>

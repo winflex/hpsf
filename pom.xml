@@ -3,11 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>lrpc</groupId>
-	<artifactId>lrpc</artifactId>
+	<groupId>io.hpsf</groupId>
+	<artifactId>hpsf-parent</artifactId>
 	<version>1.0</version>
-	<packaging>jar</packaging>
-	<name>lrpc</name>
+	<packaging>pom</packaging>
+
+	<name>hpsf-parent</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -16,24 +17,22 @@
 		<slf4j.version>1.7.5</slf4j.version>
 		<logback.version>1.1.7</logback.version>
 		<netty.version>4.1.25.Final</netty.version>
-		<hessian.version>3.2.1-fixed-2</hessian.version>
-		<kryo.version>4.0.2</kryo.version>
+		<lombok.version>1.18.2</lombok.version>
 		<lombok.version>1.18.2</lombok.version>
 	</properties>
+	
+	<modules>
+		<module>hpsf-rpc</module>
+		<module>hpsf-registry</module>
+		<module>hpsf-serialization</module>
+		<module>hpsf-common</module>
+	</modules>
 
 	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.9</version>
-			<scope>test</scope>
-		</dependency>
-
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>${slf4j.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -48,30 +47,30 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-all</artifactId>
-			<version>${netty.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.esotericsoftware</groupId>
-			<artifactId>kryo</artifactId>
-			<version>${kryo.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>hessian-lite</artifactId>
-			<version>${hessian.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<version>${lombok.version}</version>
-			<scope>provided</scope>
+		</dependency>
+
+		<!-- test dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.9</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-all</artifactId>
+				<version>${netty.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	
 	<build>
 		<plugins>
 			<plugin>

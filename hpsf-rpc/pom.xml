@@ -1,0 +1,43 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>io.hpsf</groupId>
+		<artifactId>hpsf-parent</artifactId>
+		<version>1.0</version>
+	</parent>
+	<packaging>jar</packaging>
+	<artifactId>hpsf-rpc</artifactId>
+	<name>hpsf-rpc</name>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<slf4j.version>1.7.5</slf4j.version>
+		<logback.version>1.1.7</logback.version>
+		<netty.version>4.1.25.Final</netty.version>
+		<hessian.version>3.2.1-fixed-2</hessian.version>
+		<kryo.version>4.0.2</kryo.version>
+		
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>hpsf-serialization-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>hpsf-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-all</artifactId>
+		</dependency>
+	</dependencies>
+</project>
