@@ -4,10 +4,13 @@ import lombok.Data;
 
 /**
  * 
- * @author lixiaohui
+ * @author winflex
  */
 @Data
 public class ServiceMeta {
+	
 	private String serviceName;
+	
 	private String serviceVersion;
+	
 }

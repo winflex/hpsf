@@ -12,8 +12,13 @@
 	<packaging>pom</packaging>
 	<artifactId>hpsf-registry</artifactId>
 	<name>hpsf-registry</name>
-	
+
 	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>hpsf-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 	<modules>
 		<module>hpsf-registry-zookeeper</module>

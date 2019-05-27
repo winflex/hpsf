@@ -2,12 +2,14 @@ package org.hpsf.registry.api;
 
 import java.util.List;
 
+import io.hpsf.common.lifecycle.ILifeCycle;
+
 /**
  * 注册中心
  * 
- * @author lixiaohui
+ * @author winflex
  */
-public interface IRegistry {
+public interface IRegistry extends ILifeCycle{
 	
 	void register(Registration registration);
 	

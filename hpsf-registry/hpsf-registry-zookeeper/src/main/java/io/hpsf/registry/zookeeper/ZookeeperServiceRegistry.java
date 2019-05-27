@@ -5,13 +5,17 @@ import java.util.List;
 import org.hpsf.registry.api.INotifyListener;
 import org.hpsf.registry.api.IRegistry;
 import org.hpsf.registry.api.ServiceMeta;
+
+import io.hpsf.common.lifecycle.AbstractLifeCycle;
+import io.hpsf.common.lifecycle.LifeCycleException;
+
 import org.hpsf.registry.api.Registration;
 
 /**
  * 
- * @author lixiaohui
+ * @author winflex
  */
-public class ZookeeperServiceRegistry implements IRegistry {
+public class ZookeeperServiceRegistry extends AbstractLifeCycle implements IRegistry {
 
 	@Override
 	public void register(Registration registration) {
@@ -42,5 +46,10 @@ public class ZookeeperServiceRegistry implements IRegistry {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+	
+	@Override
+	protected void destroyInternal() throws LifeCycleException {
+		super.destroyInternal();
+		// TODO Auto-generated method stub
+	}
 }

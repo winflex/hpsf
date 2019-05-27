@@ -11,4 +11,7 @@
 	</parent>
 	<artifactId>hpsf-registry-api</artifactId>
 	<name>hpsf-registry-api</name>
+	
+	<dependencies>
+	</dependencies>
 </project>

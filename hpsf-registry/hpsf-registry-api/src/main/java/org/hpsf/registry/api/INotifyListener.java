@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * 
- * @author lixiaohui
+ * @author winflex
  */
 public interface INotifyListener {
 	

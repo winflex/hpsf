@@ -6,12 +6,13 @@ import lombok.Data;
 
 /**
  * 
- * @author lixiaohui
+ * @author winflex
  */
 @Data
 public class Registration {
 	
 	private Endpoint endpoint;
+	
 	private ServiceMeta serviceMeta;
 	
 }
