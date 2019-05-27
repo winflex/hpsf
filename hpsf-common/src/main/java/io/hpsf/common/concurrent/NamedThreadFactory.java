@@ -3,6 +3,11 @@ package io.hpsf.common.concurrent;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * 
+ * 
+ * @author winflex
+ */
 public class NamedThreadFactory implements ThreadFactory {
 
 	private String namePrefix;
