@@ -9,8 +9,8 @@
 		<artifactId>hpsf-serialization</artifactId>
 		<version>1.0</version>
 	</parent>
-	<artifactId>hpsf-kryo</artifactId>
-	<name>hpsf-kryo</name>
+	<artifactId>hpsf-serialization-kryo</artifactId>
+	<name>hpsf-serialization-kryo</name>
 
 	<properties>
 		<kryo.version>4.0.2</kryo.version>
