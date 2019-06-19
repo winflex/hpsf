@@ -79,7 +79,7 @@
                                     <include>${project.groupId}:*:*</include>
                                 </includes>
                             </artifactSet>
-                            <outputFile>hpsf-${project.version}.jar</outputFile>
+                            <outputFile>${project.build.directory}/hpsf-all-${project.version}.jar</outputFile>
                         </configuration>
                     </execution>
                 </executions>

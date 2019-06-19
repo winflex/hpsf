@@ -2,10 +2,11 @@ package io.hpsf.rpc.server;
 
 import java.lang.reflect.Method;
 
+import org.hpsf.registry.api.ServiceMeta;
+
 import io.hpsf.rpc.common.IInvoker;
 import io.hpsf.rpc.common.Invocation;
 import io.hpsf.rpc.common.RpcException;
-import io.hpsf.rpc.server.IRegistryCenter.Registry;
 
 /**
  * 本地调用
@@ -24,12 +25,13 @@ public class ServerInvoker<T> implements IInvoker<T> {
 
 	@Override
 	public Object invoke(Invocation inv) throws Throwable {
-		Registry publishment = rpcServer.get(inv.getClassName());
+		ServiceMeta meta = new ServiceMeta(inv.getServiceName(), inv.getServiceVersion());
+		Publishment publishment = rpcServer.lookup(meta);
 		if (publishment == null) {
 			throw new RpcException(inv.getClassName() + " is not published");
 		}
 		
-		Object instance = publishment.getInstance(); // the service instance
+		Object instance = publishment.getServiceInstance(); // the service instance
 		Method method = instance.getClass().getMethod(inv.getMethodName(), inv.getParameterTypes());
 		if (method == null) {
 			throw new Exception(inv.getClassName() + "." + inv.getMethodName()

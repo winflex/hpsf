@@ -7,13 +7,13 @@ package io.hpsf.common.lifecycle;
  */
 public interface ILifeCycle {
 	
-	void init() throws LifeCycleException;
+	ILifeCycle init() throws LifeCycleException;
 	
-	void start() throws LifeCycleException;
+	ILifeCycle start() throws LifeCycleException;
 	
-	void destroy() throws LifeCycleException;
+	ILifeCycle destroy() throws LifeCycleException;
 	
-	void addLifeCycleListener(ILifeCycleListener l);
+	ILifeCycle addLifeCycleListener(ILifeCycleListener l);
 	
-	void removeLifeCycleListener(ILifeCycleListener l);
+	ILifeCycle removeLifeCycleListener(ILifeCycleListener l);
 }

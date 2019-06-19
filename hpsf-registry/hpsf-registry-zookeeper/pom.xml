@@ -12,6 +12,7 @@
 	<artifactId>hpsf-registry-zookeeper</artifactId>
 	<name>hpsf-registry-zookeeper</name>
 	<properties>
+		<curator.version>2.4.2</curator.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -19,5 +20,32 @@
 			<artifactId>hpsf-registry-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-framework</artifactId>
+			<version>${curator.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-recipes</artifactId>
+			<version>${curator.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-test</artifactId>
+			<version>${curator.version}</version>
+		</dependency>
+
 	</dependencies>
 </project>

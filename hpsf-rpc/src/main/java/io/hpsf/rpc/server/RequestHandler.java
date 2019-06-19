@@ -51,7 +51,7 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
 		// 客户端连接后, 回写一个信息同步报文, 携带一些信息, 如心跳间隔等
 		ServerInfo info = new ServerInfo();
-		info.setHeartbeatIntervalMillis(rpcServer.getOptions().getHeartbeatInterval());
+		info.setHeartbeatIntervalMillis(rpcServer.getConfig().getHeartbeatInterval());
 		ctx.writeAndFlush(new SyncMessage(info));
 	}
 

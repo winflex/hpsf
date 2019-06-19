@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author winflex
  */
-public abstract class AbstractLifeCycle implements ILifeCycle {
+public class DefaultLifeCycle implements ILifeCycle {
 
 	protected final String name;
 	protected final boolean autoLogState;
@@ -21,27 +21,27 @@ public abstract class AbstractLifeCycle implements ILifeCycle {
 
 	protected volatile LifeCycleState state = NEW;
 
-	protected AbstractLifeCycle() {
+	protected DefaultLifeCycle() {
 		this(null);
 	}
 
-	protected AbstractLifeCycle(String name) {
+	protected DefaultLifeCycle(String name) {
 		this(name, true);
 	}
 
-	protected AbstractLifeCycle(String name, boolean autoLogState) {
+	protected DefaultLifeCycle(String name, boolean autoLogState) {
 		if (name == null) {
 			name = getClass().getSimpleName();
 		}
 		this.name = name;
 		this.autoLogState = autoLogState;
 		if (autoLogState) {
-			addLifeCycleListener(new LifeCycleLogger());
+			addLifeCycleListener(logLifeCycleListener);
 		}
 	}
 
 	@Override
-	public synchronized final void init() throws LifeCycleException {
+	public synchronized final ILifeCycle init() throws LifeCycleException {
 		checkState(NEW);
 
 		setState(INITIALIZING);
@@ -52,13 +52,14 @@ public abstract class AbstractLifeCycle implements ILifeCycle {
 			throw e;
 		}
 		setState(INITIALIZED);
+		return this;
 	}
 
 	protected void initInternal() throws LifeCycleException {
 	};
 
 	@Override
-	public final void start() throws LifeCycleException {
+	public synchronized final ILifeCycle start() throws LifeCycleException {
 		checkState(INITIALIZED);
 
 		setState(STARTING);
@@ -69,13 +70,14 @@ public abstract class AbstractLifeCycle implements ILifeCycle {
 			throw e;
 		}
 		setState(STARTED);
+		return this;
 	}
 
 	protected void startInternal() throws LifeCycleException {
 	};
 
 	@Override
-	public final void destroy() throws LifeCycleException {
+	public synchronized final ILifeCycle destroy() throws LifeCycleException {
 		checkState(INITIALIZED, INITIALIZE_FAILED, STARTED, START_FAILED);
 
 		setState(LifeCycleState.DESTROYING);
@@ -86,6 +88,7 @@ public abstract class AbstractLifeCycle implements ILifeCycle {
 			throw e;
 		}
 		setState(LifeCycleState.DESTROYED);
+		return this;
 	}
 
 	protected void destroyInternal() throws LifeCycleException {
@@ -125,22 +128,19 @@ public abstract class AbstractLifeCycle implements ILifeCycle {
 	}
 
 	@Override
-	public final void addLifeCycleListener(ILifeCycleListener l) {
+	public final ILifeCycle addLifeCycleListener(ILifeCycleListener l) {
 		lifeCycleListeners.add(l);
+		return this;
 	}
 
 	@Override
-	public final void removeLifeCycleListener(ILifeCycleListener l) {
+	public final ILifeCycle removeLifeCycleListener(ILifeCycleListener l) {
 		lifeCycleListeners.remove(l);
+		return this;
 	}
 
-	private static final Logger lifeCycleLogger = LoggerFactory.getLogger(LifeCycleLogger.class);
+	private static final Logger lifeCycleLogger = LoggerFactory.getLogger("LifeCycleLogger");
 
-	public class LifeCycleLogger implements ILifeCycleListener {
-
-		@Override
-		public void lifeCycleEvent(LifeCycleEvent e) {
-			lifeCycleLogger.info(name + " " + e.getState().toString().toLowerCase());
-		}
-	}
+	private static final ILifeCycleListener logLifeCycleListener = e -> lifeCycleLogger
+			.info(e.getLifeCycle().name + " " + e.getState().toString().toLowerCase());
 }

@@ -16,10 +16,10 @@ public class LifeCycleEvent extends EventObject {
 
 	private static final long serialVersionUID = 6757600267753576331L;
 
-	private AbstractLifeCycle lifeCycle;
+	private DefaultLifeCycle lifeCycle;
 	private LifeCycleState state;
 	
-	public LifeCycleEvent(Object source, AbstractLifeCycle lifeCycle, LifeCycleState state) {
+	public LifeCycleEvent(Object source, DefaultLifeCycle lifeCycle, LifeCycleState state) {
 		super(source);
 		this.lifeCycle = lifeCycle;
 		this.state = state;

@@ -1,23 +1,25 @@
 package org.hpsf.registry.api;
 
+import java.io.Closeable;
 import java.util.List;
-
-import io.hpsf.common.lifecycle.ILifeCycle;
 
 /**
  * 注册中心
  * 
  * @author winflex
  */
-public interface IRegistry extends ILifeCycle{
+public interface IRegistry extends Closeable {
+
+	void init(RegistryConfig config) throws RegistryException;
 	
-	void register(Registration registration);
+	void register(Registration registration) throws RegistryException;
 	
-	void unregister(Registration registration);
+	void unregister(Registration registration) throws RegistryException;
 	
-	void subscribe(ServiceMeta serviceMeta, INotifyListener listener);
+	void subscribe(ServiceMeta serviceMeta, INotifyListener listener) throws RegistryException;
 	
-	void unsubscribe(ServiceMeta serviceMeta, INotifyListener listener);
+	void unsubscribe(ServiceMeta serviceMeta, INotifyListener listener) throws RegistryException;
 	
-	List<Registration> lookup(ServiceMeta serviceMeta);
+	List<Registration> lookup(ServiceMeta serviceMeta) throws RegistryException;
+	
 }

@@ -11,4 +11,4 @@ target
 .tar
 .gz
 .zip
-.jar
+*.jar

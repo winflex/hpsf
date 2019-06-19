@@ -16,6 +16,10 @@ public class Invocation implements Serializable {
 
     private static final long serialVersionUID = -806213717009304249L;
 
+    private String serviceName;
+    
+    private String serviceVersion;
+    
     private String className;
     
     private String methodName;
@@ -25,5 +29,9 @@ public class Invocation implements Serializable {
     private Object[] paremeters;
     
     private Map<String, String> attachments = new HashMap<String, String>();
+    
+    public String getAttachment(String key) {
+    	return attachments.get(key);
+    }
 
 }

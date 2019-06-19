@@ -3,11 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>io.hpsf</groupId>
-	<artifactId>hpsf-parent</artifactId>
+	<artifactId>hpsf</artifactId>
 	<version>1.0</version>
 	<packaging>pom</packaging>
 
-	<name>hpsf-parent</name>
+	<name>hpsf</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -26,6 +26,7 @@
 		<module>hpsf-serialization</module>
 		<module>hpsf-common</module>
     	<module>hpsf-all</module>
+    <module>hpsf-spring</module>
   </modules>
 
 	<dependencies>

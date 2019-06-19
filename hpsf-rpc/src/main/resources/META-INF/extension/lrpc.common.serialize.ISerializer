@@ -1,2 +1,0 @@
-kryo=lrpc.common.serialize.KryoSerializer
-hessian=lrpc.common.serialize.HessianSerializer
