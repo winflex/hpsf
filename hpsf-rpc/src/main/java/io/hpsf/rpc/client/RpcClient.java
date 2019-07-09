@@ -8,11 +8,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.hpsf.common.ChannelGroup;
 import io.hpsf.common.ChannelGroup.HealthChecker;
-import io.hpsf.common.concurrent.IFuture;
-import io.hpsf.common.concurrent.NamedThreadFactory;
 import io.hpsf.common.Endpoint;
 import io.hpsf.common.ExtensionLoader;
-import io.hpsf.rpc.client.proxy.IProxyFactory;
+import io.hpsf.common.concurrent.Future;
+import io.hpsf.common.concurrent.NamedThreadFactory;
+import io.hpsf.rpc.client.proxy.DefaultProxyFactory;
 import io.hpsf.rpc.common.Invocation;
 import io.hpsf.rpc.common.codec.Decoder;
 import io.hpsf.rpc.common.codec.Encoder;
@@ -81,13 +81,22 @@ public class RpcClient {
 		return b;
 	}
 
-	public <T> T getProxy(Class<T> iface) throws Exception {
-		IProxyFactory proxyFactory = ExtensionLoader.getLoader(IProxyFactory.class).getExtension(options.getProxy());
-		return (T) proxyFactory.getProxy(new ClientInvoker<>(iface, this));
+	/**
+	 * 创建服务代理
+	 */
+	public <T> T getService(Class<T> iface) throws Exception {
+		return (T) new DefaultProxyFactory().getProxy(new DefaultInvoker<>(iface, this));
 	}
 
+	/**
+	 * 创建泛化服务代理
+	 */
+	public GenericService getGenericService(String iface) throws Exception {
+		return new DefaultProxyFactory().getProxy(new GenericInvoker(iface, this));
+	}
+	
 	@SuppressWarnings("unchecked")
-	<T> IFuture<T> send(Invocation inv) {
+	<T> Future<T> send(Invocation inv) {
 		RpcRequest request = new RpcRequest(inv);
 		final long requestId = request.getId();
 		final ResponseFuture future = new ResponseFuture(requestId, options.getRequestTimeoutMillis());
@@ -101,7 +110,7 @@ public class RpcClient {
 		} catch (Exception e) {
 			ResponseFuture.doneWithException(requestId, e);
 		}
-		return (IFuture<T>) future;
+		return (Future<T>) future;
 	}
 
 	public void close() {

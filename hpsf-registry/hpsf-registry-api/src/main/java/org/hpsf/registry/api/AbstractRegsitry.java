@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.hpsf.registry.api.INotifyListener.NotifyType;
+import org.hpsf.registry.api.NotifyListener.NotifyType;
 
 import io.hpsf.common.ConcurrentSet;
 
@@ -14,12 +14,12 @@ import io.hpsf.common.ConcurrentSet;
  * 
  * @author winflex
  */
-public abstract class AbstractRegsitry implements IRegistry {
+public abstract class AbstractRegsitry implements Registry {
 
 	// 已注册信息
 	private final ConcurrentSet<Registration> registrations = new ConcurrentSet<>();
 	// 已订阅信息
-	private final ConcurrentMap<ServiceMeta, ConcurrentSet<INotifyListener>> subscribers = new ConcurrentHashMap<>();
+	private final ConcurrentMap<ServiceMeta, ConcurrentSet<NotifyListener>> subscribers = new ConcurrentHashMap<>();
 	
 	@Override
 	public void register(Registration registration) throws RegistryException {
@@ -38,11 +38,11 @@ public abstract class AbstractRegsitry implements IRegistry {
 	protected abstract void doUnregister(Registration registration) throws RegistryException;
 	
 	@Override
-	public void subscribe(ServiceMeta serviceMeta, INotifyListener listener) throws RegistryException {
-		ConcurrentSet<INotifyListener> listeners = subscribers.get(serviceMeta);
+	public void subscribe(ServiceMeta serviceMeta, NotifyListener listener) throws RegistryException {
+		ConcurrentSet<NotifyListener> listeners = subscribers.get(serviceMeta);
 		if (listeners == null) {
 			listeners = new ConcurrentSet<>();
-			ConcurrentSet<INotifyListener> oldListeners = subscribers.putIfAbsent(serviceMeta, listeners);
+			ConcurrentSet<NotifyListener> oldListeners = subscribers.putIfAbsent(serviceMeta, listeners);
 			if (oldListeners != null) {
 				listeners = oldListeners;
 			}
@@ -55,8 +55,8 @@ public abstract class AbstractRegsitry implements IRegistry {
 	protected abstract void doSubscribe(ServiceMeta serviceMeta) throws RegistryException;
 
 	@Override
-	public void unsubscribe(ServiceMeta serviceMeta, INotifyListener listener) throws RegistryException {
-		ConcurrentSet<INotifyListener> listeners = subscribers.get(serviceMeta);
+	public void unsubscribe(ServiceMeta serviceMeta, NotifyListener listener) throws RegistryException {
+		ConcurrentSet<NotifyListener> listeners = subscribers.get(serviceMeta);
 		if (listeners != null) {
 			listeners.remove(listener);
 		}
@@ -74,7 +74,7 @@ public abstract class AbstractRegsitry implements IRegistry {
 		return Collections.unmodifiableSet(registrations);
 	}
 
-	public final Map<ServiceMeta, ConcurrentSet<INotifyListener>> getSubscribers() {
+	public final Map<ServiceMeta, ConcurrentSet<NotifyListener>> getSubscribers() {
 		return Collections.unmodifiableMap(subscribers);
 	}
 }

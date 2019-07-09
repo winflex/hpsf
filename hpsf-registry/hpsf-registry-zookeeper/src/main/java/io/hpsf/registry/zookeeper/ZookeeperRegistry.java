@@ -16,8 +16,8 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.hpsf.registry.api.AbstractRegsitry;
-import org.hpsf.registry.api.INotifyListener.NotifyType;
-import org.hpsf.registry.api.IRegistry;
+import org.hpsf.registry.api.NotifyListener.NotifyType;
+import org.hpsf.registry.api.Registry;
 import org.hpsf.registry.api.Registration;
 import org.hpsf.registry.api.RegistryConfig;
 import org.hpsf.registry.api.RegistryException;
@@ -43,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author winflex
  */
 @Slf4j
-public class ZookeeperRegistry extends AbstractRegsitry implements IRegistry {
+public class ZookeeperRegistry extends AbstractRegsitry implements Registry {
 
 	public static final String ROOT = "/hpsf/registry";
 

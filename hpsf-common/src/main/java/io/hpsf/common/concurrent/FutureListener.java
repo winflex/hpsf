@@ -5,7 +5,7 @@ package io.hpsf.common.concurrent;
  *
  * @author winflex
  */
-public interface IFutureListener<F extends IFuture<?>> {
+public interface FutureListener<F extends Future<?>> {
 
     void operationCompleted(F future) throws Exception;
 }

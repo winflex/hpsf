@@ -9,7 +9,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.hpsf.registry.api.IRegistry;
+import org.hpsf.registry.api.Registry;
 import org.hpsf.registry.api.Registration;
 import org.hpsf.registry.api.RegistryException;
 import org.hpsf.registry.api.RegistryFactory;
@@ -53,7 +53,7 @@ public class RpcServer implements Closeable {
 	private final RpcServerConfig config;
 
 	private final ThreadPoolExecutor executor;
-	private final IRegistry registry;
+	private final Registry registry;
 	
 	private EventLoopGroup bossGroup;
 	private EventLoopGroup workerGroup;
@@ -148,12 +148,11 @@ public class RpcServer implements Closeable {
 	 */
 	public void publish(Publishment publishment) throws RegistryException {
 		ServiceMeta meta = new ServiceMeta(publishment.getServiceName(), publishment.getServiceVersion());
-		publishments.put(meta.directoryString(), publishment);
-
 		Registration r = new Registration();
 		r.setEndpoint(new Endpoint(config.getIp(), config.getPort()));
 		r.setServiceMeta(meta);
-		registry.register(r);
+		publishments.put(meta.directoryString(), publishment); // 本地上线
+		registry.register(r); // 在注册中心上线
 	}
 
 	/**
@@ -161,12 +160,11 @@ public class RpcServer implements Closeable {
 	 */
 	public void unpublish(Publishment publishment) throws RegistryException {
 		ServiceMeta meta = new ServiceMeta(publishment.getServiceName(), publishment.getServiceVersion());
-		publishments.remove(meta.directoryString());
-
 		Registration r = new Registration();
 		r.setEndpoint(new Endpoint(config.getIp(), config.getPort()));
 		r.setServiceMeta(meta);
-		registry.unregister(r);
+		registry.unregister(r); // 从注册中心下线
+		publishments.remove(meta.directoryString()); // 本地下线
 	}
 
 	/**

@@ -10,8 +10,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.test.TestingServer;
-import org.hpsf.registry.api.INotifyListener;
-import org.hpsf.registry.api.INotifyListener.NotifyType;
+import org.hpsf.registry.api.NotifyListener;
+import org.hpsf.registry.api.NotifyListener.NotifyType;
 import org.hpsf.registry.api.Registration;
 import org.hpsf.registry.api.RegistryConfig;
 import org.hpsf.registry.api.ServiceMeta;
@@ -59,7 +59,7 @@ public class ZooKeeperRegistryTest {
 		// 测试订阅上线
 		CountDownLatch registerLatch = new CountDownLatch(1);
 		final List<Object> registerResult = new ArrayList<>();
-		final INotifyListener registerListener = (r, type) -> {
+		final NotifyListener registerListener = (r, type) -> {
 			registerResult.add(r);
 			registerResult.add(type);
 			registerLatch.countDown();
@@ -76,7 +76,7 @@ public class ZooKeeperRegistryTest {
 		// 测试订阅下线
 		CountDownLatch unregisterLatch = new CountDownLatch(1);
 		final List<Object> unregisterResult = new ArrayList<>();
-		final INotifyListener unregisterListener = (r, type) -> {
+		final NotifyListener unregisterListener = (r, type) -> {
 			unregisterResult.add(r);
 			unregisterResult.add(type);
 			unregisterLatch.countDown();

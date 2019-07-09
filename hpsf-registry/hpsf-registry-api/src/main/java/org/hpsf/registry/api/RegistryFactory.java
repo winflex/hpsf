@@ -8,11 +8,11 @@ import io.hpsf.common.ExtensionLoader;
  */
 public class RegistryFactory {
 
-	public IRegistry create(RegistryConfig config) throws Exception {
+	public Registry create(RegistryConfig config) throws Exception {
 		String extName = config.getString("name");
 		if (extName == null) {
 			extName = "default";
 		}
-		return ExtensionLoader.getLoader(IRegistry.class).getExtension(extName);
+		return ExtensionLoader.getLoader(Registry.class).getExtension(extName);
 	}
 }

@@ -2,7 +2,7 @@ package io.hpsf.rpc.server;
 
 import static io.hpsf.common.util.NettyUtils.writeAndFlush;
 
-import io.hpsf.rpc.common.IInvoker;
+import io.hpsf.rpc.common.Invoker;
 import io.hpsf.rpc.common.Invocation;
 import io.hpsf.rpc.common.RpcResult;
 import io.hpsf.rpc.common.ServerInfo;
@@ -105,7 +105,7 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 			try {
 				Invocation inv = request.getData();
 				Class<?> clazz = Class.forName(inv.getClassName());
-				IInvoker<?> invoker = new ServerInvoker<>(clazz, rpcServer);
+				Invoker<?> invoker = new ServerInvoker<>(clazz, rpcServer);
 				Object result = invoker.invoke(inv);
 				replyWithResult(ch, request.getId(), result);
 			} catch (Throwable e) {

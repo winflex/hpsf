@@ -6,7 +6,7 @@ import java.util.Properties;
 
 import org.hpsf.registry.api.RegistryConfig;
 
-import io.hpsf.common.config.IConfig;
+import io.hpsf.common.config.Config;
 import io.hpsf.common.config.PropertiesConfig;
 
 /**
@@ -21,7 +21,7 @@ public class ClassPathPropertiesRpcServerConfig extends RpcServerConfig {
 		load(new PropertiesConfig(p));
 	}
 
-	private void load(IConfig c) {
+	private void load(Config c) {
 		setIp(c.getString("server.rpc.ip", DEFAULT_IP));
 		setPort(c.getInt("server.rpc.port", DEFAULT_PORT));
 		setIoThreads(c.getInt("server.rpc.ioThreads", DEFAULT_IO_THREADS));

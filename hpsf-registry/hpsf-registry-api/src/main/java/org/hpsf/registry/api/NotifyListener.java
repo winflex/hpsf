@@ -4,7 +4,7 @@ package org.hpsf.registry.api;
  * 
  * @author winflex
  */
-public interface INotifyListener {
+public interface NotifyListener {
 
 	void notify(Registration registration, NotifyType notifyType);
 

@@ -4,7 +4,7 @@ package io.hpsf.rpc.common;
  * 
  * @author winflex
  */
-public interface IInvoker<T> {
+public interface Invoker<T> {
 	
 	Object invoke(Invocation invocation) throws Throwable;
 

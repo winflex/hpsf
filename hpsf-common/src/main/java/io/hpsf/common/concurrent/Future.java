@@ -3,7 +3,6 @@ package io.hpsf.common.concurrent;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -12,7 +11,7 @@ import java.util.concurrent.TimeoutException;
  *
  * @author winflex
  */
-public interface IFuture<V> extends Future<V> {
+public interface Future<V> extends java.util.concurrent.Future<V> {
 
 	V getNow();
 
@@ -20,23 +19,21 @@ public interface IFuture<V> extends Future<V> {
 	V get() throws InterruptedException, ExecutionException;
 
 	@Override
-	V get(long timeout, TimeUnit unit) throws InterruptedException,
-			ExecutionException, TimeoutException;
+	V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;
 
 	boolean isSuccess();
 
 	Throwable cause();
 
-	IFuture<V> addListener(IFutureListener<? extends IFuture<V>> listener);
+	Future<V> addListener(FutureListener<? extends Future<V>> listener);
 
-	IFuture<V> addListener(IFutureListener<? extends IFuture<V>> listener,
-			Executor executor);
+	Future<V> addListener(FutureListener<? extends Future<V>> listener, Executor executor);
 
-	IFuture<V> removeListener(IFutureListener<? extends IFuture<V>> listener);
+	Future<V> removeListener(FutureListener<? extends Future<V>> listener);
 
-	IFuture<V> await() throws InterruptedException;
+	Future<V> await() throws InterruptedException;
 
-	IFuture<V> awaitUninterruptibly();
+	Future<V> awaitUninterruptibly();
 
 	boolean await(long timeout, TimeUnit unit) throws InterruptedException;
 
@@ -46,5 +43,5 @@ public interface IFuture<V> extends Future<V> {
 
 	Map<String, Object> getAttachments();
 
-	IFuture<V> setAttachment(String name, Object value);
+	Future<V> setAttachment(String name, Object value);
 }

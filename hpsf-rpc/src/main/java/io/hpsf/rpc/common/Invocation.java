@@ -16,11 +16,9 @@ public class Invocation implements Serializable {
 
     private static final long serialVersionUID = -806213717009304249L;
 
-    private String serviceName;
+    private String className; // also as service name
     
-    private String serviceVersion;
-    
-    private String className;
+    private String version;
     
     private String methodName;
 	

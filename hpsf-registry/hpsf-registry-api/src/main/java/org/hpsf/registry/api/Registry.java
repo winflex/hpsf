@@ -8,7 +8,7 @@ import java.util.List;
  * 
  * @author winflex
  */
-public interface IRegistry extends Closeable {
+public interface Registry extends Closeable {
 
 	void init(RegistryConfig config) throws RegistryException;
 	
@@ -16,9 +16,9 @@ public interface IRegistry extends Closeable {
 	
 	void unregister(Registration registration) throws RegistryException;
 	
-	void subscribe(ServiceMeta serviceMeta, INotifyListener listener) throws RegistryException;
+	void subscribe(ServiceMeta serviceMeta, NotifyListener listener) throws RegistryException;
 	
-	void unsubscribe(ServiceMeta serviceMeta, INotifyListener listener) throws RegistryException;
+	void unsubscribe(ServiceMeta serviceMeta, NotifyListener listener) throws RegistryException;
 	
 	List<Registration> lookup(ServiceMeta serviceMeta) throws RegistryException;
 	

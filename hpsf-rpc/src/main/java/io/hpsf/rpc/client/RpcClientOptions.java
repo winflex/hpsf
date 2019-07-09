@@ -29,9 +29,6 @@ public class RpcClientOptions {
 	/** 序列化扩展点名字 */
 	private String serializer = "hessian";
 
-	/** 动态代理扩展点名字, 默认使用jdk */
-	private String proxy = "jdk";
-
 	public RpcClientOptions(Endpoint endpoint) {
 		this.endpoint = endpoint;
 	}
@@ -55,12 +52,5 @@ public class RpcClientOptions {
 			throw new IllegalArgumentException("The serializer can't be null");
 		}
 		this.serializer = serializer;
-	}
-
-	public void setProxy(String proxy) {
-		if (proxy == null || proxy.isEmpty()) {
-			throw new IllegalArgumentException("The proxy can't be null");
-		}
-		this.proxy = proxy;
 	}
 }

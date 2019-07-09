@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author winflex
  */
-public class DefaultPromise<V> implements IPromise<V>, Serializable {
+public class DefaultPromise<V> implements Promise<V>, Serializable {
 
 	private static final long serialVersionUID = -6962917401801793701L;
 
@@ -35,12 +35,12 @@ public class DefaultPromise<V> implements IPromise<V>, Serializable {
 	/**
 	 * Accessed only inside synchronized(this)
 	 */
-	private final Map<IFutureListener<? extends IFuture<V>>, Executor> listeners = new HashMap<>();
+	private final Map<FutureListener<? extends Future<V>>, Executor> listeners = new HashMap<>();
 	private final ConcurrentMap<String, Object> attachments = new ConcurrentHashMap<>();
 
 	/**
 	 * The default executor to execute
-	 * {@link IFutureListener#operationCompleted(IFuture)}
+	 * {@link FutureListener#operationCompleted(Future)}
 	 */
 	private final Executor defaultExecutor;
 
@@ -136,12 +136,12 @@ public class DefaultPromise<V> implements IPromise<V>, Serializable {
 	}
 
 	@Override
-	public IPromise<V> await() throws InterruptedException {
+	public Promise<V> await() throws InterruptedException {
 		return await0(true);
 	}
 
 	@Override
-	public IPromise<V> awaitUninterruptibly() {
+	public Promise<V> awaitUninterruptibly() {
 		try {
 			return await0(false);
 		} catch (InterruptedException e) {
@@ -165,14 +165,14 @@ public class DefaultPromise<V> implements IPromise<V>, Serializable {
 	}
 
 	@Override
-	public IPromise<V> addListener(
-			IFutureListener<? extends IFuture<V>> listener) {
+	public Promise<V> addListener(
+			FutureListener<? extends Future<V>> listener) {
 		return addListener(listener, defaultExecutor);
 	}
 
 	@Override
-	public IPromise<V> addListener(
-			IFutureListener<? extends IFuture<V>> listener, Executor executor) {
+	public Promise<V> addListener(
+			FutureListener<? extends Future<V>> listener, Executor executor) {
 		Objects.requireNonNull(listener, "listener");
 		Objects.requireNonNull(executor, "executor");
 
@@ -193,8 +193,8 @@ public class DefaultPromise<V> implements IPromise<V>, Serializable {
 	}
 
 	@Override
-	public IPromise<V> removeListener(
-			IFutureListener<? extends IFuture<V>> listener) {
+	public Promise<V> removeListener(
+			FutureListener<? extends Future<V>> listener) {
 		synchronized (this) {
 			if (!isDone()) {
 				listeners.remove(listener);
@@ -214,13 +214,13 @@ public class DefaultPromise<V> implements IPromise<V>, Serializable {
 	}
 
 	@Override
-	public IPromise<V> setAttachment(String name, Object value) {
+	public Promise<V> setAttachment(String name, Object value) {
 		attachments.put(name, value);
 		return this;
 	}
 
 	@Override
-	public IPromise<V> setSuccess(Object result) {
+	public Promise<V> setSuccess(Object result) {
 		if (setSuccess0(result)) {
 			notifyListeners();
 		}
@@ -228,7 +228,7 @@ public class DefaultPromise<V> implements IPromise<V>, Serializable {
 	}
 
 	@Override
-	public IPromise<V> setFailure(Throwable cause) {
+	public Promise<V> setFailure(Throwable cause) {
 		if (setFailure0(cause)) {
 			notifyListeners();
 		}
@@ -272,7 +272,7 @@ public class DefaultPromise<V> implements IPromise<V>, Serializable {
 		return true;
 	}
 
-	private IPromise<V> await0(boolean interruptable)
+	private Promise<V> await0(boolean interruptable)
 			throws InterruptedException {
 		if (isDone()) {
 			return this;
@@ -357,7 +357,7 @@ public class DefaultPromise<V> implements IPromise<V>, Serializable {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void notifyListener(IFutureListener listener, Executor executor) {
+	private void notifyListener(FutureListener listener, Executor executor) {
 		if (executor == SynchronousExecutor.INSTANCE) {
 			// No need to new runnable instance
 			try {
@@ -381,12 +381,12 @@ public class DefaultPromise<V> implements IPromise<V>, Serializable {
 	}
 
 	private void notifyListeners() {
-		Map<IFutureListener<? extends IFuture<V>>, Executor> copy;
+		Map<FutureListener<? extends Future<V>>, Executor> copy;
 		synchronized (this) {
 			copy = new HashMap<>(listeners);
 		}
 
-		for (Entry<IFutureListener<? extends IFuture<V>>, Executor> entry : copy
+		for (Entry<FutureListener<? extends Future<V>>, Executor> entry : copy
 				.entrySet()) {
 			notifyListener(entry.getKey(), entry.getValue());
 		}
@@ -396,7 +396,7 @@ public class DefaultPromise<V> implements IPromise<V>, Serializable {
 		return this.defaultExecutor;
 	}
 
-	protected final Map<IFutureListener<? extends IFuture<V>>, Executor> listeners() {
+	protected final Map<FutureListener<? extends Future<V>>, Executor> listeners() {
 		return this.listeners;
 	}
 

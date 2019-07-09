@@ -22,7 +22,7 @@ public class PropertiesConfig extends AbstractConfig {
 	}
 
 	@Override
-	public IConfig setString(String key, String value) {
+	public Config setString(String key, String value) {
 		properties.setProperty(key, value);
 		return this;
 	}

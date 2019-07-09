@@ -3,7 +3,6 @@ package io.hpsf.common;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -21,9 +20,6 @@ public final class ExtensionLoader {
 	private static final String EXTENSION_DIRECTORY = "META-INF/extension/";
 	private static final ConcurrentMap<Class<?>, ExtensionLoader> EXTENSION_LOADER_CACHE = new ConcurrentHashMap<Class<?>, ExtensionLoader>();
 
-	private static final String DEFAULT_EXTENSION_NAME = "default";
-	
-	
 	private final Class<?> type;
 	private volatile Map<String, String> extensionClassCache;
 

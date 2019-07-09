@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 
 import org.hpsf.registry.api.ServiceMeta;
 
-import io.hpsf.rpc.common.IInvoker;
+import io.hpsf.rpc.common.Invoker;
 import io.hpsf.rpc.common.Invocation;
 import io.hpsf.rpc.common.RpcException;
 
@@ -13,7 +13,7 @@ import io.hpsf.rpc.common.RpcException;
  * 
  * @author winflex
  */
-public class ServerInvoker<T> implements IInvoker<T> {
+public class ServerInvoker<T> implements Invoker<T> {
 
 	private final Class<T> iface;
 	private final RpcServer rpcServer;
@@ -25,7 +25,7 @@ public class ServerInvoker<T> implements IInvoker<T> {
 
 	@Override
 	public Object invoke(Invocation inv) throws Throwable {
-		ServiceMeta meta = new ServiceMeta(inv.getServiceName(), inv.getServiceVersion());
+		ServiceMeta meta = new ServiceMeta(inv.getClassName(), inv.getVersion());
 		Publishment publishment = rpcServer.lookup(meta);
 		if (publishment == null) {
 			throw new RpcException(inv.getClassName() + " is not published");

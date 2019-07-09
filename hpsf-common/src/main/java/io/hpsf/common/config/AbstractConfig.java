@@ -4,7 +4,7 @@ package io.hpsf.common.config;
  * 
  * @author winflex
  */
-public abstract class AbstractConfig implements IConfig {
+public abstract class AbstractConfig implements Config {
 
 	@Override
 	public int getInt(String key) {
@@ -25,7 +25,7 @@ public abstract class AbstractConfig implements IConfig {
 	}
 	
 	@Override
-	public IConfig setInt(String key, int value) {
+	public Config setInt(String key, int value) {
 		return setString(key, String.valueOf(value));
 	}
 
@@ -48,7 +48,7 @@ public abstract class AbstractConfig implements IConfig {
 	}
 	
 	@Override
-	public IConfig setLong(String key, long value) {
+	public Config setLong(String key, long value) {
 		return setString(key, String.valueOf(value));
 	}
 }

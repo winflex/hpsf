@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import io.hpsf.common.concurrent.DefaultPromise;
-import io.hpsf.common.concurrent.IFuture;
+import io.hpsf.common.concurrent.Future;
 
 /**
  * 
@@ -31,7 +31,7 @@ public class RpcContext {
 	
 	private boolean async;
 	
-	private IFuture<?> future;
+	private Future<?> future;
 	
 	private Map<String, String> attachments = new HashMap<>();
 	
@@ -39,7 +39,7 @@ public class RpcContext {
 	 * 同步转异步调用
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> IFuture<T> asyncCall(Callable<T> callable) {
+	public <T> Future<T> asyncCall(Callable<T> callable) {
 		this.async = true;
 		try {
 			callable.call();
@@ -52,18 +52,18 @@ public class RpcContext {
 		} finally {
 			async = false;
 		}
-		return (IFuture<T>) this.future;
+		return (Future<T>) this.future;
 	}
 
 	public final boolean isAsync() {
 		return async;
 	}
 
-	public final IFuture<?> getFuture() {
+	public final Future<?> getFuture() {
 		return future;
 	}
 
-	public final void setFuture(IFuture<?> future) {
+	public final void setFuture(Future<?> future) {
 		this.future = future;
 	}
 
