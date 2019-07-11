@@ -122,6 +122,7 @@ public abstract class AbstractRegsitry implements Registry {
 				}
 			});
 		});
+		subscribers.clear();
 		doClose();
 	}
 
@@ -134,6 +135,4 @@ public abstract class AbstractRegsitry implements Registry {
 	protected final Map<ServiceMeta, ConcurrentSet<NotifyListener>> getSubscribers() {
 		return Collections.unmodifiableMap(subscribers);
 	}
-	
-	
 }
