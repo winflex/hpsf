@@ -17,10 +17,12 @@ public class DefaultInvoker<T> implements Invoker<T> {
 
 	private final RpcClient rpcClient;
 	private final Class<T> iface;
+	private final String serviceVersion;
 
-	public DefaultInvoker(Class<T> iface, RpcClient rpcClient) throws RpcException {
+	public DefaultInvoker(Class<T> iface, String serviceVersion, RpcClient rpcClient) throws RpcException {
 		this.rpcClient = rpcClient;
 		this.iface = iface;
+		this.serviceVersion = serviceVersion;
 	}
 
 	@Override
@@ -28,6 +30,7 @@ public class DefaultInvoker<T> implements Invoker<T> {
 		Future<Object> future = rpcClient.send(inv);
 		RpcContext ctx = RpcContext.getContext();
 		inv.setAttachments(ctx.getAttachments());
+		inv.setVersion(serviceVersion);
 		if (ctx.isAsync()) {
 			ctx.setFuture(future);
 			return null;

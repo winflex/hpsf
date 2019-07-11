@@ -12,8 +12,8 @@ public class GenericInvoker extends DefaultInvoker<GenericService> {
 	// 泛化接口
 	private final String iface;
 	
-	public GenericInvoker(String iface, RpcClient rpcClient) throws RpcException {
-		super(GenericService.class, rpcClient);
+	public GenericInvoker(String iface, String serviceVersion, RpcClient rpcClient) throws RpcException {
+		super(GenericService.class, serviceVersion, rpcClient);
 		this.iface = iface;
 	}
 

@@ -91,12 +91,12 @@ public class RpcClient {
 		return b;
 	}
 
-	public <T> T getServiceProxy(Class<T> iface) throws Exception {
-		return (T) new DefaultProxyFactory().getProxy(new DefaultInvoker<>(iface, this));
+	public <T> T getServiceProxy(Class<T> iface, String serviceVersion) throws Exception {
+		return (T) new DefaultProxyFactory().getProxy(new DefaultInvoker<>(iface, serviceVersion, this));
 	}
 
-	public GenericService getGenericServiceProxy(String iface) throws Exception {
-		return new DefaultProxyFactory().getProxy(new GenericInvoker(iface, this));
+	public GenericService getGenericServiceProxy(String iface, String serviceVersion) throws Exception {
+		return new DefaultProxyFactory().getProxy(new GenericInvoker(iface, serviceVersion, this));
 	}
 
 	@SuppressWarnings("unchecked")

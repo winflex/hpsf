@@ -9,4 +9,5 @@ public interface Invoker<T> {
 	Object invoke(Invocation invocation) throws Throwable;
 
 	Class<T> getInterface();
+	
 }

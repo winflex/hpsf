@@ -26,7 +26,7 @@
 		<module>hpsf-serialization</module>
 		<module>hpsf-common</module>
     	<module>hpsf-all</module>
-    <module>hpsf-spring</module>
+    	<module>hpsf-spring</module>
   </modules>
 
 	<dependencies>
