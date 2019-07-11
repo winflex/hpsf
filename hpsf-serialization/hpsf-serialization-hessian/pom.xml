@@ -12,7 +12,7 @@
 	<artifactId>hpsf-serialization-hessian</artifactId>
 	<name>hpsf-serialization-hessian</name>
 	<properties>
-		<hessian.version>3.2.1-fixed-2</hessian.version>
+		<hessian.version>3.2.5</hessian.version>
 	</properties>
 	<dependencies>
 		<dependency>
