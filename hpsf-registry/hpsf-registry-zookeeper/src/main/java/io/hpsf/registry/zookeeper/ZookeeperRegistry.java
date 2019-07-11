@@ -15,15 +15,14 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.hpsf.registry.api.AbstractRegsitry;
-import org.hpsf.registry.api.NotifyListener.NotifyType;
-import org.hpsf.registry.api.Registry;
-import org.hpsf.registry.api.Registration;
-import org.hpsf.registry.api.RegistryConfig;
-import org.hpsf.registry.api.RegistryException;
-import org.hpsf.registry.api.ServiceMeta;
 
 import io.hpsf.common.Endpoint;
+import io.hpsf.registry.api.AbstractRegsitry;
+import io.hpsf.registry.api.Registration;
+import io.hpsf.registry.api.Registry;
+import io.hpsf.registry.api.RegistryException;
+import io.hpsf.registry.api.ServiceMeta;
+import io.hpsf.registry.api.NotifyListener.NotifyType;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -52,9 +51,8 @@ public class ZookeeperRegistry extends AbstractRegsitry implements Registry {
 	private final ConcurrentMap<ServiceMeta, PathChildrenCache> pathChildrenCaches = new ConcurrentHashMap<>();
 
 	@Override
-	public void init(RegistryConfig config) throws RegistryException {
-		curator = CuratorFrameworkFactory.newClient(config.getString("server"),
-				new ExponentialBackoffRetry(100, 10, 30000));
+	public void init(String address) throws RegistryException {
+		curator = CuratorFrameworkFactory.newClient(address, new ExponentialBackoffRetry(100, 10, 30000));
 		curator.getConnectionStateListenable().addListener(((client, state) -> {
 			log.info("zookeeper connection event {}", state);
 			if (state == ConnectionState.RECONNECTED) {
@@ -174,7 +172,7 @@ public class ZookeeperRegistry extends AbstractRegsitry implements Registry {
 	}
 
 	@Override
-	public List<Registration> lookup(ServiceMeta serviceMeta) throws RegistryException {
+	public List<Registration> doLookup(ServiceMeta serviceMeta) throws RegistryException {
 		try {
 			List<Registration> registrations = new ArrayList<>();
 			curator.getChildren().forPath(path4Service(serviceMeta)).forEach((childPath) -> {
@@ -200,7 +198,7 @@ public class ZookeeperRegistry extends AbstractRegsitry implements Registry {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void doClose() throws IOException {
 		pathChildrenCaches.values().forEach(c -> closeQuietly(c));
 		if (curator != null) {
 			curator.close();

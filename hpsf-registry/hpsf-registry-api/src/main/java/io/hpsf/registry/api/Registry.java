@@ -1,4 +1,4 @@
-package org.hpsf.registry.api;
+package io.hpsf.registry.api;
 
 import java.io.Closeable;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface Registry extends Closeable {
 
-	void init(RegistryConfig config) throws RegistryException;
+	void init(String connectString) throws RegistryException;
 	
 	void register(Registration registration) throws RegistryException;
 	

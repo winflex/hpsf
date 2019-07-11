@@ -1,4 +1,4 @@
-package org.hpsf.registry.api;
+package io.hpsf.registry.api;
 
 /**
  * 

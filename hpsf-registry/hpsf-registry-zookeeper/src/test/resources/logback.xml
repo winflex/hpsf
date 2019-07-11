@@ -7,9 +7,9 @@
 		</encoder>
 	</appender>
 
-	<logger name="io.hpsf" level="INFO" />
+	<logger name="io.hpsf" level="debug" />
 
-	<root level="WARN">
+	<root level="warn">
 		<appender-ref ref="stdout" />
 	</root>
 </configuration>

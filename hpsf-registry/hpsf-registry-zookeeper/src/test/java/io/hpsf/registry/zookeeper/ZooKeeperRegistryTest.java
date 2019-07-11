@@ -10,11 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.test.TestingServer;
-import org.hpsf.registry.api.NotifyListener;
-import org.hpsf.registry.api.NotifyListener.NotifyType;
-import org.hpsf.registry.api.Registration;
-import org.hpsf.registry.api.RegistryConfig;
-import org.hpsf.registry.api.ServiceMeta;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,7 +17,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.hpsf.common.Endpoint;
-import io.hpsf.registry.zookeeper.ZookeeperRegistry;
+import io.hpsf.registry.api.NotifyListener;
+import io.hpsf.registry.api.Registration;
+import io.hpsf.registry.api.ServiceMeta;
+import io.hpsf.registry.api.NotifyListener.NotifyType;
 
 /**
  * 
@@ -99,14 +97,8 @@ public class ZooKeeperRegistryTest {
 				server = new TestingServer(port);
 				break;
 			} catch (Exception e) {
-
 			}
 		}
-		RegistryConfig config = new RegistryConfig();
-		config.setString("name", "zookeeper");
-		config.setString("server", "127.0.0.1:" + server.getPort());
-		registry = new ZookeeperRegistry();
-		registry.init(config);
 	}
 
 	@AfterClass
@@ -116,6 +108,9 @@ public class ZooKeeperRegistryTest {
 
 	@Before
 	public void before() throws Exception {
+		registry = new ZookeeperRegistry();
+		registry.init("127.0.0.1:" + server.getPort());
+		
 		Field field = registry.getClass().getDeclaredField("curator");
 		field.setAccessible(true);
 		CuratorFramework curator = (CuratorFramework) field.get(registry);
@@ -123,5 +118,9 @@ public class ZooKeeperRegistryTest {
 			curator.delete().deletingChildrenIfNeeded().forPath(ZookeeperRegistry.ROOT);
 		} catch (Exception e) {
 		}
+	}
+	
+	public void after() throws Exception {
+		registry.close();
 	}
 }
