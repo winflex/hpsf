@@ -1,6 +1,5 @@
 package io.hpsf.registry.api;
 
-import java.io.Closeable;
 import java.util.List;
 
 /**
@@ -8,7 +7,7 @@ import java.util.List;
  * 
  * @author winflex
  */
-public interface Registry extends Closeable {
+public interface Registry {
 
 	void init(String connectString) throws RegistryException;
 	
@@ -22,4 +21,5 @@ public interface Registry extends Closeable {
 	
 	List<Registration> lookup(ServiceMeta serviceMeta) throws RegistryException;
 	
+	void close();
 }

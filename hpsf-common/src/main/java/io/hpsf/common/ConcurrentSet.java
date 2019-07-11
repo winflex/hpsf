@@ -2,6 +2,7 @@ package io.hpsf.common;
 
 import java.io.Serializable;
 import java.util.AbstractSet;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -21,6 +22,11 @@ public final class ConcurrentSet<E> extends AbstractSet<E> implements Serializab
         map = new ConcurrentHashMap<>();
     }
 
+    public ConcurrentSet(Collection<? extends E> elements) {
+    	 map = new ConcurrentHashMap<>();
+    	 addAll(elements);
+    }
+    
     @Override
     public int size() {
         return map.size();

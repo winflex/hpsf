@@ -1,6 +1,5 @@
 package io.hpsf.registry.api;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -105,12 +104,12 @@ public abstract class AbstractRegsitry implements Registry {
 	protected abstract List<Registration> doLookup(ServiceMeta serviceMeta) throws RegistryException;
 
 	protected final void notify(Registration r, NotifyType type) {
-		log.debug("{} {}", r, type);
+		log.info("{} {}", r, type.toString().toLowerCase());
 		subscribers.get(r.getServiceMeta()).forEach(l -> l.notify(r, type));
 	}
 
 	@Override
-	public final void close() throws IOException {
+	public final void close() {
 		lookupCache.clear();
 		registrations.clear();
 		subscribers.forEach((serviceMeta, listeners) -> {
@@ -126,7 +125,7 @@ public abstract class AbstractRegsitry implements Registry {
 		doClose();
 	}
 
-	protected abstract void doClose() throws IOException;
+	protected abstract void doClose();
 
 	protected final Set<Registration> getRegistrations() {
 		return Collections.unmodifiableSet(registrations);

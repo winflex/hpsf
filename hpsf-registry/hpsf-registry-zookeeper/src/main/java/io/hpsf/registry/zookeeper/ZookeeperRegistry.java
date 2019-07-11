@@ -4,7 +4,6 @@ import static io.hpsf.common.util.CloseableUtils.closeQuietly;
 import static org.apache.zookeeper.CreateMode.EPHEMERAL;
 import static org.apache.zookeeper.CreateMode.PERSISTENT;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,11 +17,11 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 
 import io.hpsf.common.Endpoint;
 import io.hpsf.registry.api.AbstractRegsitry;
+import io.hpsf.registry.api.NotifyListener.NotifyType;
 import io.hpsf.registry.api.Registration;
 import io.hpsf.registry.api.Registry;
 import io.hpsf.registry.api.RegistryException;
 import io.hpsf.registry.api.ServiceMeta;
-import io.hpsf.registry.api.NotifyListener.NotifyType;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -134,7 +133,7 @@ public class ZookeeperRegistry extends AbstractRegsitry implements Registry {
 			PathChildrenCache oldPathChildrenCache = pathChildrenCaches.putIfAbsent(serviceMeta, pathChildrenCache);
 			if (oldPathChildrenCache == null) {
 				pathChildrenCache.getListenable().addListener((client, event) -> {
-					log.info("zookeeper connection event {}", event);
+					log.debug("zookeeper connection event {}", event);
 					switch (event.getType()) {
 					case CHILD_ADDED: {
 						final String fullPath = event.getData().getPath();
@@ -198,7 +197,7 @@ public class ZookeeperRegistry extends AbstractRegsitry implements Registry {
 	}
 
 	@Override
-	public void doClose() throws IOException {
+	public void doClose() {
 		pathChildrenCaches.values().forEach(c -> closeQuietly(c));
 		if (curator != null) {
 			curator.close();
