@@ -13,6 +13,7 @@ import io.hpsf.common.Endpoint;
 import io.hpsf.common.ExtensionLoader;
 import io.hpsf.common.concurrent.DefaultPromise;
 import io.hpsf.common.concurrent.NamedThreadFactory;
+import io.hpsf.common.concurrent.SynchronousExecutor;
 import io.hpsf.registry.api.Registration;
 import io.hpsf.registry.api.Registry;
 import io.hpsf.registry.api.RegistryConfig;
@@ -53,7 +54,7 @@ public class RpcServer implements Closeable {
 
 	private final ThreadPoolExecutor executor;
 	private final Registry registry;
-	
+
 	private EventLoopGroup bossGroup;
 	private EventLoopGroup workerGroup;
 	private Channel serverChannel;
@@ -100,7 +101,7 @@ public class RpcServer implements Closeable {
 		}
 		b.group(bossGroup, workerGroup);
 		b.childHandler(new ChannelInitializer<SocketChannel>() {
-			
+
 			@Override
 			protected void initChannel(SocketChannel ch) throws Exception {
 				log.info("Channel connected, channel = {}", ch);
@@ -110,7 +111,8 @@ public class RpcServer implements Closeable {
 				ChannelPipeline pl = ch.pipeline();
 				pl.addLast(new FlushConsolidationHandler(256, true));
 				pl.addLast(new IdleStateHandler(config.getHeartbeatInterval() * 2, 0, 0, TimeUnit.MILLISECONDS));
-				ISerializer serializer = ExtensionLoader.getLoader(ISerializer.class).getExtension(config.getSerializer());
+				ISerializer serializer = ExtensionLoader.getLoader(ISerializer.class)
+						.getExtension(config.getSerializer());
 				pl.addLast(new Decoder(serializer));
 				pl.addLast(new Encoder(serializer));
 				pl.addLast(new RequestHandler(RpcServer.this));
@@ -123,6 +125,46 @@ public class RpcServer implements Closeable {
 		} else {
 			throw new RpcException(f.cause());
 		}
+	}
+
+	/**
+	 * 发布服务
+	 */
+	public void publish(Class<?> iface, Object serviceInstance, String serviceVersion) throws RegistryException {
+		publish(iface, serviceInstance, serviceVersion, SynchronousExecutor.INSTANCE);
+	}
+
+	/**
+	 * 发布服务
+	 */
+	public void publish(Class<?> iface, Object serviceInstance, String serviceVersion, Executor executor)
+			throws RegistryException {
+		String serviceName = iface.getName();
+		ServiceMeta meta = new ServiceMeta(serviceName, serviceVersion);
+		// 本地上线
+		publishments.put(meta.directoryString(),
+				new Publishment(serviceName, serviceVersion, serviceInstance, executor));
+		// 在注册中心上线
+		registry.register(new Registration(new Endpoint(config.getIp(), config.getPort()), meta));
+	}
+
+	/**
+	 * 反发布的服务
+	 */
+	public void unpublish(Class<?> iface, Object serviceInstance, String serviceVersion) throws RegistryException {
+		String serviceName = iface.getName();
+		ServiceMeta meta = new ServiceMeta(serviceName, serviceVersion);
+		// 从注册中心下线
+		registry.unregister(new Registration(new Endpoint(config.getIp(), config.getPort()), meta));
+		// 本地下线
+		publishments.remove(meta.directoryString());
+	}
+
+	/**
+	 * 查找本地服务
+	 */
+	public Publishment lookup(ServiceMeta meta) {
+		return publishments.get(meta.directoryString());
 	}
 
 	@Override
@@ -142,37 +184,6 @@ public class RpcServer implements Closeable {
 		registry.close();
 		log.info("Server shutdown");
 		closeFuture.setSuccess(null);
-	}
-
-	/**
-	 * 发布服务
-	 */
-	public void publish(Publishment publishment) throws RegistryException {
-		ServiceMeta meta = new ServiceMeta(publishment.getServiceName(), publishment.getServiceVersion());
-		Registration r = new Registration();
-		r.setEndpoint(new Endpoint(config.getIp(), config.getPort()));
-		r.setServiceMeta(meta);
-		publishments.put(meta.directoryString(), publishment); // 本地上线
-		registry.register(r); // 在注册中心上线
-	}
-
-	/**
-	 * 反发布的服务
-	 */
-	public void unpublish(Publishment publishment) throws RegistryException {
-		ServiceMeta meta = new ServiceMeta(publishment.getServiceName(), publishment.getServiceVersion());
-		Registration r = new Registration();
-		r.setEndpoint(new Endpoint(config.getIp(), config.getPort()));
-		r.setServiceMeta(meta);
-		registry.unregister(r); // 从注册中心下线
-		publishments.remove(meta.directoryString()); // 本地下线
-	}
-
-	/**
-	 * 查找本地服务
-	 */
-	public Publishment lookup(ServiceMeta meta) {
-		return publishments.get(meta.directoryString());
 	}
 
 	public final Executor getExecutor() {

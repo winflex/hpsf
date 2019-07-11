@@ -2,6 +2,7 @@ package io.hpsf.rpc.provider;
 
 import java.util.concurrent.Executor;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**
@@ -10,9 +11,10 @@ import lombok.Data;
  * @author winflex
  */
 @Data
-public class Publishment {
+@AllArgsConstructor
+class Publishment {
 	
-	private String serviceName;
+	private String serviceName; // 必须是服务接口类型
 	
 	private String serviceVersion;
 	

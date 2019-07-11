@@ -40,7 +40,7 @@ public class ChannelBag {
 
 	public ChannelBag(Bootstrap bootstrap, int channelCount, HealthChecker healthChecker) throws IOException {
 		if (channelCount <= 0) {
-			throw new IllegalArgumentException("maxConnections must be positive");
+			throw new IllegalArgumentException("channelCount must be positive");
 		}
 		this.channelCount = channelCount;
 		this.bootstrap = bootstrap;

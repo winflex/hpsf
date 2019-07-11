@@ -16,7 +16,7 @@ public class Invocation implements Serializable {
 
     private static final long serialVersionUID = -806213717009304249L;
 
-    private String className; // also as service name
+    private String className; // 同时也是服务名
     
     private String version;
     
