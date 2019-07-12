@@ -1,7 +1,5 @@
 package io.hpsf.rpc.provider;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
@@ -22,7 +20,7 @@ import io.hpsf.registry.api.ServiceMeta;
 import io.hpsf.rpc.RpcException;
 import io.hpsf.rpc.protocol.codec.Decoder;
 import io.hpsf.rpc.protocol.codec.Encoder;
-import io.hpsf.serialization.api.ISerializer;
+import io.hpsf.serialization.api.Serializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -48,7 +46,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author winflex
  */
 @Slf4j
-public class RpcServer implements Closeable {
+public class RpcServer {
 
 	private final RpcServerConfig config;
 
@@ -111,7 +109,7 @@ public class RpcServer implements Closeable {
 				ChannelPipeline pl = ch.pipeline();
 				pl.addLast(new FlushConsolidationHandler(256, true));
 				pl.addLast(new IdleStateHandler(config.getHeartbeatInterval() * 2, 0, 0, TimeUnit.MILLISECONDS));
-				ISerializer serializer = ExtensionLoader.getLoader(ISerializer.class)
+				Serializer serializer = ExtensionLoader.getLoader(Serializer.class)
 						.getExtension(config.getSerializer());
 				pl.addLast(new Decoder(serializer));
 				pl.addLast(new Encoder(serializer));
@@ -121,7 +119,7 @@ public class RpcServer implements Closeable {
 		ChannelFuture f = b.bind(config.getIp(), config.getPort()).syncUninterruptibly();
 		if (f.isSuccess()) {
 			this.serverChannel = f.channel();
-			log.info("RpcServer is listening on {}:{}", config.getIp(), config.getPort());
+			log.info("rpc server is now listening on {}/{}", config.getIp(), config.getPort());
 		} else {
 			throw new RpcException(f.cause());
 		}
@@ -146,6 +144,7 @@ public class RpcServer implements Closeable {
 				new Publishment(serviceName, serviceVersion, serviceInstance, executor));
 		// 在注册中心上线
 		registry.register(new Registration(new Endpoint(config.getIp(), config.getPort()), meta));
+		log.info("published service {}-{} {}", iface.getName(), serviceVersion, serviceInstance);
 	}
 
 	/**
@@ -167,8 +166,7 @@ public class RpcServer implements Closeable {
 		return publishments.get(meta.directoryString());
 	}
 
-	@Override
-	public void close() throws IOException {
+	public void close() {
 		if (serverChannel != null) {
 			serverChannel.close();
 		}

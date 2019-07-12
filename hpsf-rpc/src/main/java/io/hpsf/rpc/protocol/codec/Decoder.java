@@ -19,7 +19,7 @@ import io.hpsf.rpc.protocol.RpcRequest;
 import io.hpsf.rpc.protocol.RpcResponse;
 import io.hpsf.rpc.protocol.ServerInfo;
 import io.hpsf.rpc.protocol.SyncMessage;
-import io.hpsf.serialization.api.ISerializer;
+import io.hpsf.serialization.api.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -38,9 +38,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Decoder extends ByteToMessageDecoder {
 
-	private final ISerializer serializer;
+	private final Serializer serializer;
 	
-	public Decoder(ISerializer serializer) {
+	public Decoder(Serializer serializer) {
 		this.serializer = serializer;
 	}
 	

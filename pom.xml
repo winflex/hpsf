@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>io.hpsf</groupId>
-	<artifactId>hpsf</artifactId>
+	<artifactId>hpsf-parent</artifactId>
 	<version>1.0</version>
 	<packaging>pom</packaging>
 

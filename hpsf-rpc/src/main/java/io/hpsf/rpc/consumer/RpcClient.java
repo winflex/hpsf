@@ -2,6 +2,7 @@
  * 
  */
 package io.hpsf.rpc.consumer;
+import static io.hpsf.common.util.ExceptionUtils.throwException;
 
 import io.hpsf.common.ExtensionLoader;
 import io.hpsf.common.concurrent.Future;
@@ -10,12 +11,13 @@ import io.hpsf.registry.api.Registration;
 import io.hpsf.registry.api.Registry;
 import io.hpsf.registry.api.ServiceMeta;
 import io.hpsf.rpc.Invocation;
+import io.hpsf.rpc.RpcException;
 import io.hpsf.rpc.consumer.balance.LoadBalancerManager;
 import io.hpsf.rpc.consumer.proxy.DefaultProxyFactory;
 import io.hpsf.rpc.protocol.RpcRequest;
 import io.hpsf.rpc.protocol.codec.Decoder;
 import io.hpsf.rpc.protocol.codec.Encoder;
-import io.hpsf.serialization.api.ISerializer;
+import io.hpsf.serialization.api.Serializer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -55,7 +57,7 @@ public class RpcClient {
 		this.config = config;
 		this.channelManager = new ChannelManager(createBootstrap(), config.getMaxConnections());
 		this.registry = ExtensionLoader.getLoader(Registry.class).getExtension(config.getRegistry());
-		this.registry.init(config.getRegistryAddress());
+		this.registry.init(config.getRegistryConnectString());
 	}
 
 	private Bootstrap createBootstrap() {
@@ -80,7 +82,7 @@ public class RpcClient {
 				});
 
 				ChannelPipeline pl = ch.pipeline();
-				ISerializer serializer = ExtensionLoader.getLoader(ISerializer.class)
+				Serializer serializer = ExtensionLoader.getLoader(Serializer.class)
 						.getExtension(config.getSerializer());
 				pl.addLast(new FlushConsolidationHandler(256, true));
 				pl.addLast(new Decoder(serializer));
@@ -108,6 +110,9 @@ public class RpcClient {
 			ServiceMeta serviceMeta = new ServiceMeta(inv.getClassName(), inv.getVersion());
 			Registration registration = loadBalancerManager.getLoadBalancer(serviceMeta)
 					.select(registry.lookup(serviceMeta));
+			if (registration == null) {
+				throwException(new RpcException(String.format("No providers found for %s-%s", inv.getClassName(), inv.getVersion())));
+			}
 			Channel channel = channelManager.getChannel(registration.getEndpoint(), config.getConnectTimeoutMillis());
 			channel.writeAndFlush(request).addListener((f) -> {
 				if (!f.isSuccess()) {
@@ -122,6 +127,7 @@ public class RpcClient {
 
 	public void close() {
 		registry.close();
+		channelManager.close();
 		if (workerGroup != null) {
 			workerGroup.shutdownGracefully();
 		}

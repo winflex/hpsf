@@ -3,7 +3,7 @@ package io.hpsf.rpc.protocol.codec;
 import java.io.ByteArrayOutputStream;
 
 import io.hpsf.rpc.protocol.RpcMessage;
-import io.hpsf.serialization.api.ISerializer;
+import io.hpsf.serialization.api.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -19,9 +19,9 @@ import io.netty.handler.codec.MessageToByteEncoder;
  */
 public class Encoder extends MessageToByteEncoder<RpcMessage<?>> {
 
-	private final ISerializer serializer;
+	private final Serializer serializer;
 
-	public Encoder(ISerializer serializer) {
+	public Encoder(Serializer serializer) {
 		this.serializer = serializer;
 	}
 

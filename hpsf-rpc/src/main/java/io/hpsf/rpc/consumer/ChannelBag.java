@@ -36,7 +36,7 @@ public class ChannelBag {
 	private final HealthChecker healthChecker;
 
 	private final CopyOnWriteArrayList<Channel> channels = new CopyOnWriteArrayList<>();
-	private final AtomicInteger selectIndex = new AtomicInteger();
+	private final AtomicInteger selectIndex = new AtomicInteger(); // 轮询下标
 
 	public ChannelBag(Bootstrap bootstrap, int channelCount, HealthChecker healthChecker) throws IOException {
 		if (channelCount <= 0) {
@@ -45,6 +45,12 @@ public class ChannelBag {
 		this.channelCount = channelCount;
 		this.bootstrap = bootstrap;
 		this.healthChecker = healthChecker;
+		ChannelFuture future = bootstrap.connect().syncUninterruptibly();
+		if (future.isSuccess()) {
+			channels.add(future.channel());
+		} else {
+			throw new IOException(future.cause());
+		}
 		houseKeepingExecutor.scheduleWithFixedDelay(() -> keepHouse(), 100, 100, TimeUnit.MILLISECONDS);
 	}
 
@@ -52,7 +58,7 @@ public class ChannelBag {
 		final AtomicInteger selectIndex = this.selectIndex;
 		final long start = currentTime();
 		int size;
-		for (; elapsedMillis(start) < timeoutMillis;) {
+		do {
 			if ((size = channels.size()) > 0) {
 				try {
 					Channel ch = channels.get(selectIndex.getAndIncrement() & size);
@@ -67,7 +73,7 @@ public class ChannelBag {
 			} else {
 				LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(10));
 			}
-		}
+		} while (elapsedMillis(start) < timeoutMillis);
 
 		throw new TimeoutException("get channel timed out after " + elapsedMillis(start));
 	}
@@ -98,6 +104,7 @@ public class ChannelBag {
 	}
 
 	public void close() {
+		houseKeepingExecutor.shutdownNow();
 		channels.forEach(ch -> ch.close());
 	}
 

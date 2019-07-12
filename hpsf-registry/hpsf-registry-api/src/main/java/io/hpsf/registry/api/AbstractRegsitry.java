@@ -111,7 +111,17 @@ public abstract class AbstractRegsitry implements Registry {
 	@Override
 	public final void close() {
 		lookupCache.clear();
+		// 下线所有服务
+		registrations.forEach(r -> {
+			try {
+				unregister(r);
+			} catch (RegistryException e) {
+				log.error(e.getMessage(), e);
+			}
+		});
 		registrations.clear();
+		
+		// 取消所有订阅
 		subscribers.forEach((serviceMeta, listeners) -> {
 			listeners.forEach(listener -> {
 				try {
@@ -122,6 +132,7 @@ public abstract class AbstractRegsitry implements Registry {
 			});
 		});
 		subscribers.clear();
+		
 		doClose();
 	}
 

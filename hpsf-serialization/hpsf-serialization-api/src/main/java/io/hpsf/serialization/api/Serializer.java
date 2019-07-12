@@ -9,7 +9,7 @@ import java.io.OutputStream;
  * 
  * @author winflex
  */
-public interface ISerializer {
+public interface Serializer {
 	
 	void serialize(Object obj, OutputStream out) throws IOException;
 	

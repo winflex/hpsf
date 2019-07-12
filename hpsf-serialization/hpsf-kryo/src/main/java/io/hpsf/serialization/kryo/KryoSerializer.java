@@ -8,13 +8,13 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
-import io.hpsf.serialization.api.ISerializer;
+import io.hpsf.serialization.api.Serializer;
 
 /**
  * TODO 解决kryo序列化没有无参构造方法异常的问题
  * @author winflex
  */
-public class KryoSerializer implements ISerializer {
+public class KryoSerializer implements Serializer {
 	
 	public static final KryoSerializer INSTANCE = new KryoSerializer();
 

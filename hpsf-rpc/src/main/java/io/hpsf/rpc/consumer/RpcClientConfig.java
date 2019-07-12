@@ -12,7 +12,7 @@ public class RpcClientConfig {
 
 	private String registry = "zookeeper";
 	
-	private String registryAddress;
+	private String registryConnectString;
 	
 	/** io线程个数 */
 	private int ioThreads;

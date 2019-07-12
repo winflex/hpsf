@@ -53,7 +53,7 @@ public class ZookeeperRegistry extends AbstractRegsitry implements Registry {
 	public void init(String address) throws RegistryException {
 		curator = CuratorFrameworkFactory.newClient(address, new ExponentialBackoffRetry(100, 10, 30000));
 		curator.getConnectionStateListenable().addListener(((client, state) -> {
-			log.info("zookeeper connection event {}", state);
+			log.debug("zookeeper connection event {}", state);
 			if (state == ConnectionState.RECONNECTED) {
 				// 重新订阅
 				getSubscribers().keySet().forEach(serviceMeta -> {
@@ -79,8 +79,14 @@ public class ZookeeperRegistry extends AbstractRegsitry implements Registry {
 	@Override
 	public void doRegister(Registration registration) throws RegistryException {
 		final String directory = path4Service(registration.getServiceMeta());
-		// 创建服务目录
+		final String path = path4Endpoint(directory, registration.getEndpoint());
+		
 		try {
+			// 是否已存在
+			if (curator.checkExists().forPath(path) != null) {
+				return;
+			}
+			// 创建服务目录
 			if (curator.checkExists().forPath(directory) == null) {
 				curator.create().creatingParentsIfNeeded().withMode(PERSISTENT).forPath(directory);
 			}
@@ -99,7 +105,7 @@ public class ZookeeperRegistry extends AbstractRegsitry implements Registry {
 
 		// 创建提供者节点
 		try {
-			curator.create().withMode(EPHEMERAL).forPath(path4Endpoint(directory, registration.getEndpoint()));
+			curator.create().withMode(EPHEMERAL).forPath(path);
 		} catch (Exception e) {
 			throw new RegistryException(e);
 		}

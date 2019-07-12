@@ -1,6 +1,5 @@
 package io.hpsf.rpc.provider;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -16,7 +15,7 @@ public class ClassPathPropertiesRpcServerConfig extends RpcServerConfig {
 
 	public ClassPathPropertiesRpcServerConfig(String file) throws IOException {
 		Properties p = new Properties();
-		p.load(new FileInputStream(file));
+		p.load(getClass().getClassLoader().getResourceAsStream(file));
 		load(new PropertiesConfig(p));
 	}
 

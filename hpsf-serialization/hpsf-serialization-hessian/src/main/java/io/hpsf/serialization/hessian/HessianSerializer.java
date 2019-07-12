@@ -8,13 +8,13 @@ import com.alibaba.com.caucho.hessian.io.Hessian2Input;
 import com.alibaba.com.caucho.hessian.io.Hessian2Output;
 import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 
-import io.hpsf.serialization.api.ISerializer;
+import io.hpsf.serialization.api.Serializer;
 
 /**
  * 
  * @author winflex
  */
-public class HessianSerializer implements ISerializer {
+public class HessianSerializer implements Serializer {
 
 	@Override
 	public void serialize(Object obj, OutputStream out) throws IOException {

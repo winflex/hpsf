@@ -1,0 +1,1 @@
+kryo=io.hpsf.serialization.kryo.KryoSerializer

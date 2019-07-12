@@ -27,12 +27,14 @@ public class DefaultInvoker<T> implements Invoker<T> {
 
 	@Override
 	public Object invoke(Invocation inv) throws Throwable {
-		Future<Object> future = rpcClient.send(inv);
-		RpcContext ctx = RpcContext.getContext();
-		inv.setAttachments(ctx.getAttachments());
+		RpcContext context = RpcContext.getContext();
+		inv.setAttachments(context.getAttachments());
 		inv.setVersion(serviceVersion);
-		if (ctx.isAsync()) {
-			ctx.setFuture(future);
+		
+		// 调用
+		Future<Object> future = rpcClient.send(inv);
+		if (context.isAsync()) {
+			context.setFuture(future);
 			return null;
 		} else {
 			return future.get(rpcClient.getOptions().getRequestTimeoutMillis(), TimeUnit.MILLISECONDS);
