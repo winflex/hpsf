@@ -9,15 +9,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link ILifeCycle} 的抽象实现
+ * {@link LifeCycle} 的抽象实现
  * 
  * @author winflex
  */
-public class DefaultLifeCycle implements ILifeCycle {
+public class DefaultLifeCycle implements LifeCycle {
 
 	protected final String name;
 	protected final boolean autoLogState;
-	private final List<ILifeCycleListener> lifeCycleListeners = new ArrayList<ILifeCycleListener>();
+	private final List<LifeCycleListener> lifeCycleListeners = new ArrayList<LifeCycleListener>();
 
 	protected volatile LifeCycleState state = NEW;
 
@@ -41,7 +41,7 @@ public class DefaultLifeCycle implements ILifeCycle {
 	}
 
 	@Override
-	public synchronized final ILifeCycle init() throws LifeCycleException {
+	public synchronized final LifeCycle init() throws LifeCycleException {
 		checkState(NEW);
 
 		setState(INITIALIZING);
@@ -59,7 +59,7 @@ public class DefaultLifeCycle implements ILifeCycle {
 	};
 
 	@Override
-	public synchronized final ILifeCycle start() throws LifeCycleException {
+	public synchronized final LifeCycle start() throws LifeCycleException {
 		checkState(INITIALIZED);
 
 		setState(STARTING);
@@ -77,7 +77,7 @@ public class DefaultLifeCycle implements ILifeCycle {
 	};
 
 	@Override
-	public synchronized final ILifeCycle destroy() throws LifeCycleException {
+	public synchronized final LifeCycle destroy() throws LifeCycleException {
 		checkState(INITIALIZED, INITIALIZE_FAILED, STARTED, START_FAILED);
 
 		setState(LifeCycleState.DESTROYING);
@@ -128,19 +128,19 @@ public class DefaultLifeCycle implements ILifeCycle {
 	}
 
 	@Override
-	public final ILifeCycle addLifeCycleListener(ILifeCycleListener l) {
+	public final LifeCycle addLifeCycleListener(LifeCycleListener l) {
 		lifeCycleListeners.add(l);
 		return this;
 	}
 
 	@Override
-	public final ILifeCycle removeLifeCycleListener(ILifeCycleListener l) {
+	public final LifeCycle removeLifeCycleListener(LifeCycleListener l) {
 		lifeCycleListeners.remove(l);
 		return this;
 	}
 
 	private static final Logger lifeCycleLogger = LoggerFactory.getLogger("LifeCycleLogger");
 
-	private static final ILifeCycleListener logLifeCycleListener = e -> lifeCycleLogger
+	private static final LifeCycleListener logLifeCycleListener = e -> lifeCycleLogger
 			.info(e.getLifeCycle().name + " " + e.getState().toString().toLowerCase());
 }

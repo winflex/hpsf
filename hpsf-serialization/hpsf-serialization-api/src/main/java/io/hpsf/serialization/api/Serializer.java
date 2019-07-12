@@ -1,6 +1,5 @@
 package io.hpsf.serialization.api;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -10,8 +9,8 @@ import java.io.OutputStream;
  * @author winflex
  */
 public interface Serializer {
-	
-	void serialize(Object obj, OutputStream out) throws IOException;
-	
-	<T> T deserialize(InputStream in) throws IOException, ClassNotFoundException;
+
+	void serialize(Object obj, OutputStream out) throws SerializeException;
+
+	<T> T deserialize(InputStream in) throws SerializeException;
 }

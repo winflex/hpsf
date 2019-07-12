@@ -2,6 +2,7 @@
  * 
  */
 package io.hpsf.rpc.consumer;
+
 import static io.hpsf.common.util.ExceptionUtils.throwException;
 
 import io.hpsf.common.ExtensionLoader;
@@ -43,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RpcClient {
 
 	private final RpcClientConfig config; // 配置
-	private EventLoopGroup workerGroup;
+	private EventLoopGroup workerGroup; // effectively finaled
 	private final ChannelManager channelManager;
 
 	private final Registry registry;
@@ -111,7 +112,8 @@ public class RpcClient {
 			Registration registration = loadBalancerManager.getLoadBalancer(serviceMeta)
 					.select(registry.lookup(serviceMeta));
 			if (registration == null) {
-				throwException(new RpcException(String.format("No providers found for %s-%s", inv.getClassName(), inv.getVersion())));
+				throwException(new RpcException(
+						String.format("No providers found for %s-%s", inv.getClassName(), inv.getVersion())));
 			}
 			Channel channel = channelManager.getChannel(registration.getEndpoint(), config.getConnectTimeoutMillis());
 			channel.writeAndFlush(request).addListener((f) -> {
@@ -128,9 +130,7 @@ public class RpcClient {
 	public void close() {
 		registry.close();
 		channelManager.close();
-		if (workerGroup != null) {
-			workerGroup.shutdownGracefully();
-		}
+		workerGroup.shutdownGracefully();
 	}
 
 	public final RpcClientConfig getOptions() {

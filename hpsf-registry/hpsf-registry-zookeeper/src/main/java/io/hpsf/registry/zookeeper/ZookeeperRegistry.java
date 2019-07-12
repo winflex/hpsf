@@ -80,7 +80,7 @@ public class ZookeeperRegistry extends AbstractRegsitry implements Registry {
 	public void doRegister(Registration registration) throws RegistryException {
 		final String directory = path4Service(registration.getServiceMeta());
 		final String path = path4Endpoint(directory, registration.getEndpoint());
-		
+
 		try {
 			// 是否已存在
 			if (curator.checkExists().forPath(path) != null) {

@@ -12,6 +12,7 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 
 /**
+ * 维护多个server的连接
  * 
  * @author winflex
  */

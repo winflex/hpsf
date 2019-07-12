@@ -57,6 +57,7 @@ public class RpcServer {
 	private EventLoopGroup workerGroup;
 	private Channel serverChannel;
 
+	// 本地发布的服务
 	private final ConcurrentMap<String, Publishment> publishments = new ConcurrentHashMap<>();
 
 	private final DefaultPromise<Void> closeFuture = new DefaultPromise<>();
@@ -67,9 +68,7 @@ public class RpcServer {
 				Runtime.getRuntime().availableProcessors() * 2, 1, TimeUnit.MINUTES,
 				new LinkedBlockingQueue<Runnable>(), new NamedThreadFactory("hpsf-service-worker"));
 
-		// 初始化注册中心
 		this.registry = createAndInitRegistry(config.getRegistryConfig());
-		// 初始化rpc server
 		startAcceptor(config);
 	}
 
@@ -119,7 +118,7 @@ public class RpcServer {
 		ChannelFuture f = b.bind(config.getIp(), config.getPort()).syncUninterruptibly();
 		if (f.isSuccess()) {
 			this.serverChannel = f.channel();
-			log.info("rpc server is now listening on {}/{}", config.getIp(), config.getPort());
+			log.info("rpc server is now listening on {}:{}", config.getIp(), config.getPort());
 		} else {
 			throw new RpcException(f.cause());
 		}
@@ -140,8 +139,11 @@ public class RpcServer {
 		String serviceName = iface.getName();
 		ServiceMeta meta = new ServiceMeta(serviceName, serviceVersion);
 		// 本地上线
-		publishments.put(meta.directoryString(),
+		Publishment pub = publishments.put(meta.directoryString(),
 				new Publishment(serviceName, serviceVersion, serviceInstance, executor));
+		if (pub != null) {
+			throw new RegistryException(String.format("%s-%s already published", iface.getName(), serviceVersion)) ;
+		}
 		// 在注册中心上线
 		registry.register(new Registration(new Endpoint(config.getIp(), config.getPort()), meta));
 		log.info("published service {}-{} {}", iface.getName(), serviceVersion, serviceInstance);
@@ -167,18 +169,10 @@ public class RpcServer {
 	}
 
 	public void close() {
-		if (serverChannel != null) {
-			serverChannel.close();
-		}
-		if (bossGroup != null) {
-			bossGroup.shutdownGracefully();
-		}
-		if (workerGroup != null) {
-			workerGroup.shutdownGracefully();
-		}
-
+		serverChannel.close();
+		bossGroup.shutdownGracefully();
+		workerGroup.shutdownGracefully();
 		executor.shutdownNow();
-
 		registry.close();
 		log.info("Server shutdown");
 		closeFuture.setSuccess(null);

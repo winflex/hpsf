@@ -21,6 +21,7 @@ public class Provider {
 		Executor executor = Executors.newSingleThreadExecutor(new NamedThreadFactory("AddService-Executor"));
 		AddService service = new AddServiceImpl();
 		server.publish(AddService.class, service, "1.0", executor);
+		server.publish(AddService.class, service, "1.0", executor);
 		server.join();
 		server.close();
 	}

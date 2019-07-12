@@ -8,6 +8,7 @@ import com.alibaba.com.caucho.hessian.io.Hessian2Input;
 import com.alibaba.com.caucho.hessian.io.Hessian2Output;
 import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 
+import io.hpsf.serialization.api.SerializeException;
 import io.hpsf.serialization.api.Serializer;
 
 /**
@@ -17,19 +18,27 @@ import io.hpsf.serialization.api.Serializer;
 public class HessianSerializer implements Serializer {
 
 	@Override
-	public void serialize(Object obj, OutputStream out) throws IOException {
-		Hessian2Output ho = new Hessian2Output(out);
-		ho.setSerializerFactory(SERIALIZER_FACTORY);
-		ho.writeObject(obj);
-		ho.flush();
+	public void serialize(Object obj, OutputStream out) throws SerializeException {
+		try {
+			Hessian2Output ho = new Hessian2Output(out);
+			ho.setSerializerFactory(SERIALIZER_FACTORY);
+			ho.writeObject(obj);
+			ho.flush();
+		} catch (IOException e) {
+			throw new SerializeException(e);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T deserialize(InputStream in) throws IOException, ClassNotFoundException {
+	public <T> T deserialize(InputStream in) throws SerializeException {
 		Hessian2Input hi = new Hessian2Input(in);
 		hi.setSerializerFactory(SERIALIZER_FACTORY);
-		return (T) hi.readObject();
+		try {
+			return (T) hi.readObject();
+		} catch (IOException e) {
+			throw new SerializeException(e);
+		}
 	}
 
 	private static final SerializerFactory SERIALIZER_FACTORY = new SerializerFactory() {

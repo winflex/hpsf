@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 连接池(与传统数据库连接池概念不同, 这里的连接池中的连接是可以被多个线程同时使用的)
  * 
- * 
  * @author winflex
  */
 @Slf4j
