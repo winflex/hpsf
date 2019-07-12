@@ -11,7 +11,7 @@
 	</parent>
 	<artifactId>hpsf-all</artifactId>
 	<name>hpsf-all</name>
-	<packaging>pom</packaging>
+	<packaging>jar</packaging>
 
 	<dependencies>
 		<dependency>
@@ -63,14 +63,13 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>2.4.3</version>
                 <executions>
-                    <execution>
+                      <execution>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
                         <configuration>
                             <createSourcesJar>true</createSourcesJar>
-                            <promoteTransitiveDependencies>false</promoteTransitiveDependencies>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                             </transformers>
@@ -79,7 +78,6 @@
                                     <include>${project.groupId}:*:*</include>
                                 </includes>
                             </artifactSet>
-                            <outputFile>${project.build.directory}/hpsf-all-${project.version}.jar</outputFile>
                         </configuration>
                     </execution>
                 </executions>
