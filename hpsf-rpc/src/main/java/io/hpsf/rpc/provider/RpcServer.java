@@ -12,6 +12,7 @@ import io.hpsf.common.ExtensionLoader;
 import io.hpsf.common.concurrent.DefaultPromise;
 import io.hpsf.common.concurrent.NamedThreadFactory;
 import io.hpsf.common.concurrent.SynchronousExecutor;
+import io.hpsf.common.util.NetAddressUtils;
 import io.hpsf.registry.api.Registration;
 import io.hpsf.registry.api.Registry;
 import io.hpsf.registry.api.RegistryConfig;
@@ -68,14 +69,15 @@ public class RpcServer {
 				Runtime.getRuntime().availableProcessors() * 2, 1, TimeUnit.MINUTES,
 				new LinkedBlockingQueue<Runnable>(), new NamedThreadFactory("hpsf-service-worker"));
 
-		this.registry = createAndInitRegistry(config.getRegistryConfig());
+		this.registry = createAndInitRegistry();
 		startAcceptor(config);
 	}
 
-	private Registry createAndInitRegistry(RegistryConfig config) throws RpcException {
+	private Registry createAndInitRegistry() throws RpcException {
 		try {
-			Registry registry = ExtensionLoader.getLoader(Registry.class).getExtension(config.getType());
-			registry.init(config.getConnectString());
+			RegistryConfig registryConfig = RegistryConfig.parse(config.getRegistry());
+			Registry registry = ExtensionLoader.getLoader(Registry.class).getExtension(registryConfig.getType());
+			registry.init(registryConfig.getConnectString());
 			return registry;
 		} catch (Exception e) {
 			throw new RpcException(e);
@@ -115,13 +117,22 @@ public class RpcServer {
 				pl.addLast(new RequestHandler(RpcServer.this));
 			}
 		});
-		ChannelFuture f = b.bind(config.getIp(), config.getPort()).syncUninterruptibly();
+		ChannelFuture f = b.bind(findIp(), config.getPort()).syncUninterruptibly();
 		if (f.isSuccess()) {
 			this.serverChannel = f.channel();
-			log.info("rpc server is now listening on {}:{}", config.getIp(), config.getPort());
+			log.info("Rpc server is now listening on {}:{}", config.getIp(), config.getPort());
 		} else {
 			throw new RpcException(f.cause());
 		}
+	}
+
+	private String findIp() {
+		String ip = config.getIp();
+		if (ip == null || ip.isEmpty()) {
+			ip = NetAddressUtils.getLocalAddress().getHostAddress();
+			config.setIp(ip);
+		}
+		return ip;
 	}
 
 	/**
@@ -159,6 +170,7 @@ public class RpcServer {
 		registry.unregister(new Registration(new Endpoint(config.getIp(), config.getPort()), meta));
 		// 本地下线
 		publishments.remove(meta.directoryString());
+		log.info("unpublished service {}-{} {}", iface.getName(), serviceVersion, serviceInstance);
 	}
 
 	/**
@@ -174,7 +186,7 @@ public class RpcServer {
 		workerGroup.shutdownGracefully();
 		executor.shutdownNow();
 		registry.close();
-		log.info("Server shutdown");
+		log.info("Rpc server closed");
 		closeFuture.setSuccess(null);
 	}
 

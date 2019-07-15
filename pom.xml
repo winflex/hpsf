@@ -10,6 +10,7 @@
 	<packaging>pom</packaging>
 
 	<name>hpsf</name>
+	<description>An RPC Framework</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,7 +19,6 @@
 		<slf4j.version>1.7.5</slf4j.version>
 		<logback.version>1.1.7</logback.version>
 		<netty.version>4.1.25.Final</netty.version>
-		<lombok.version>1.18.2</lombok.version>
 		<lombok.version>1.18.2</lombok.version>
 	</properties>
 

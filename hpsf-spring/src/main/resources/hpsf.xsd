@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns="http://www.hpsf-rpc.org/hpsf"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:tool="http://www.springframework.org/schema/tool"
+	targetNamespace="http://www.hpsf-rpc.org/hpsf"
+	elementFormDefault="qualified">
+
+	<xsd:import namespace="http://www.springframework.org/schema/beans" />
+	<xsd:import namespace="http://www.springframework.org/schema/tool" />
+
+	<xsd:complexType name="idType">
+		<xsd:attribute name="id" type="xsd:ID" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ Bean唯一标识. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="hpsfServerType">
+		<xsd:complexContent>
+			<xsd:extension base="idType">
+			 	<xsd:attribute name="ip" type="xsd:string" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ 绑定IP. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+			 	<xsd:attribute name="port" type="xsd:int" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ 监听端口. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+			 	<xsd:attribute name="registry" type="xsd:string" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ 注册中心地址, 例如zookeeper://127.0.0.1:2181. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+			 	<xsd:attribute name="ioThreads" type="xsd:int" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ RPC服务器的IO线程数. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+			 	<xsd:attribute name="heartbeatInterval" type="xsd:int" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ RPC客户端与服务端心跳间隔. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+			 	<xsd:attribute name="serializer" type="xsd:string" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ 序列化类型 ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	
+	<xsd:complexType name="hpsfServiceType">
+		<xsd:complexContent>
+			<xsd:extension base="idType">
+				<xsd:attribute name="server" type="xsd:string" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ RPC服务器 ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+				<xsd:attribute name="ref" type="xsd:string" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ 服务实现的Bean ID. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+				<xsd:attribute name="version" type="xsd:string" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ 服务版本. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+				<xsd:attribute name="coreThreads" type="xsd:int" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ 服务的核心线程数. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+				<xsd:attribute name="maxThreads" type="xsd:int" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ 服务的最大线程数. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+				<xsd:attribute name="interface" type="xsd:string" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ 指定发布的接口, 如果服务实现了多个接口则必须指定该属性. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	
+	<xsd:complexType name="hpsfClientType">
+		<xsd:complexContent>
+			<xsd:extension base="idType">
+				<xsd:attribute name="registry" type="xsd:string" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ 注册中心地址, 例如zookeeper://127.0.0.1:2181. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+			 	<xsd:attribute name="ioThreads" type="xsd:int" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ IO线程数. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+			 	<xsd:attribute name="connectTimeoutMillis" type="xsd:int" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ 创建连接超时时间. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+			 	<xsd:attribute name="requestTimeoutMillis" type="xsd:int" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ 请求超时时间. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+			 	<xsd:attribute name="maxConnectionPerServer" type="xsd:int" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ 客户端能与每个服务器建立的最大连接数. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+			 	<xsd:attribute name="serializer" type="xsd:string" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ 请求超时时间. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	
+	<xsd:complexType name="hpsfReferenceType">
+		<xsd:complexContent>
+			<xsd:extension base="idType">
+				<xsd:attribute name="interface" type="xsd:string" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ 接口类名. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+				<xsd:attribute name="version" type="xsd:string" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ 服务版本. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+				<xsd:attribute name="client" type="xsd:string" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ RPC Client的Bean标识. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+				<xsd:attribute name="generic" type="xsd:boolean" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ 是否泛化调用. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+
+	<xsd:element name="server" type="hpsfServerType" />
+	<xsd:element name="service" type="hpsfServiceType" />
+	<xsd:element name="client" type="hpsfClientType" />
+	<xsd:element name="reference" type="hpsfReferenceType" />
+	
+</xsd:schema>

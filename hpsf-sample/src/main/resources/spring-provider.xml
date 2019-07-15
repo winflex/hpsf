@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:hpsf="http://www.hpsf-rpc.org/hpsf"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.hpsf-rpc.org/hpsf
+       http://www.hpsf-rpc.org/hpsf/hpsf.xsd">
+
+	<!-- 服务实现实例 -->
+	<bean id="addServiceImpl" class="io.hpsf.sample.api.AddServiceImpl" />
+
+	<!-- 配置RPC服务器 -->
+	<hpsf:server port="8888" registry="zookeeper://127.0.0.1:2181" />
+
+	<!-- 配置暴露的服务 -->
+	<hpsf:service ref="addServiceImpl" version="1.0" coreThreads="1" maxThreads="10" />
+</beans>

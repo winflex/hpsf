@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:hpsf="http://www.hpsf-rpc.org/hpsf"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.hpsf-rpc.org/hpsf
+       http://www.hpsf-rpc.org/hpsf/hpsf.xsd">
+
+	<!-- 配置RPC客户端 -->
+	<hpsf:client registry="zookeeper://127.0.0.1:2181" />
+
+	<!-- 接口调用代理 -->
+	<hpsf:reference interface="io.hpsf.sample.api.AddService" version="1.0" />
+
+	<!-- 泛化调用代理 -->
+	<hpsf:reference interface="io.hpsf.sample.api.AddService" version="1.0" generic="true" />
+</beans>

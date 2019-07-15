@@ -5,7 +5,6 @@ import java.util.Properties;
 
 import io.hpsf.common.config.Config;
 import io.hpsf.common.config.PropertiesConfig;
-import io.hpsf.registry.api.RegistryConfig;
 
 /**
  * 
@@ -20,14 +19,10 @@ public class ClassPathPropertiesRpcServerConfig extends RpcServerConfig {
 	}
 
 	private void load(Config c) {
-		setIp(c.getString("server.rpc.ip", DEFAULT_IP));
+		setIp(c.getString("server.rpc.ip", null));
 		setPort(c.getInt("server.rpc.port", DEFAULT_PORT));
 		setIoThreads(c.getInt("server.rpc.ioThreads", DEFAULT_IO_THREADS));
 		setHeartbeatInterval(c.getInt("server.rpc.heartbeatInterval", DEFAULT_HEARTBEAT_INTERVAL));
-		RegistryConfig registryConfig = new RegistryConfig();
-		registryConfig.setType(c.getString("server.registry.type"));
-		registryConfig.setConnectString(c.getString("server.registry.connectString"));
-		setRegistryConfig(registryConfig);
+		setRegistry(c.getString("server.registry"));
 	}
-
 }

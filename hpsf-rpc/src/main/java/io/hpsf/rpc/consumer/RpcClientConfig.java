@@ -10,9 +10,7 @@ import lombok.Data;
 @Data
 public class RpcClientConfig {
 
-	private String registry = "zookeeper";
-	
-	private String registryConnectString;
+	private String registry;
 	
 	/** io线程个数 */
 	private int ioThreads;
@@ -24,7 +22,7 @@ public class RpcClientConfig {
 	private int requestTimeoutMillis = Integer.MAX_VALUE; // default to forever
 
 	/** 最大连接数 */
-	private int maxConnections = 1;
+	private int maxConnectionPerServer = 1;
 
 	/** 序列化扩展点名字 */
 	private String serializer = "hessian";

@@ -10,6 +10,7 @@ import io.hpsf.common.concurrent.Future;
 import io.hpsf.common.concurrent.NamedThreadFactory;
 import io.hpsf.registry.api.Registration;
 import io.hpsf.registry.api.Registry;
+import io.hpsf.registry.api.RegistryConfig;
 import io.hpsf.registry.api.ServiceMeta;
 import io.hpsf.rpc.Invocation;
 import io.hpsf.rpc.RpcException;
@@ -43,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RpcClient {
 
-	private final RpcClientConfig config; // 配置
+	private final RpcClientConfig config; 
 	private EventLoopGroup workerGroup; // effectively finaled
 	private final ChannelManager channelManager;
 
@@ -56,9 +57,11 @@ public class RpcClient {
 
 	public RpcClient(RpcClientConfig config) throws Exception {
 		this.config = config;
-		this.channelManager = new ChannelManager(createBootstrap(), config.getMaxConnections());
-		this.registry = ExtensionLoader.getLoader(Registry.class).getExtension(config.getRegistry());
-		this.registry.init(config.getRegistryConnectString());
+		this.channelManager = new ChannelManager(createBootstrap(), config.getMaxConnectionPerServer());
+		
+		RegistryConfig registryConfig = RegistryConfig.parse(config.getRegistry());
+		this.registry = ExtensionLoader.getLoader(Registry.class).getExtension(registryConfig.getType());
+		this.registry.init(registryConfig.getConnectString());
 	}
 
 	private Bootstrap createBootstrap() {
@@ -131,6 +134,7 @@ public class RpcClient {
 		registry.close();
 		channelManager.close();
 		workerGroup.shutdownGracefully();
+		log.info("Rpc client closed");
 	}
 
 	public final RpcClientConfig getOptions() {
