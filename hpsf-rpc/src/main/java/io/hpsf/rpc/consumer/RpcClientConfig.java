@@ -24,9 +24,6 @@ public class RpcClientConfig {
 	/** 最大连接数 */
 	private int maxConnectionPerServer = 1;
 
-	/** 序列化扩展点名字 */
-	private String serializer = "hessian";
-
 	public void setInvokeTimeoutMillis(int invokeTimeoutMillis) {
 		if (invokeTimeoutMillis <= 0) {
 			throw new IllegalArgumentException("The invokeTimeoutMillis must be positive");
@@ -39,12 +36,5 @@ public class RpcClientConfig {
 			throw new IllegalArgumentException("The connectTimeoutMillis must be positive");
 		}
 		this.connectTimeoutMillis = connectTimeoutMillis;
-	}
-
-	public void setSerializer(String serializer) {
-		if (serializer == null || serializer.isEmpty()) {
-			throw new IllegalArgumentException("The serializer can't be null");
-		}
-		this.serializer = serializer;
 	}
 }

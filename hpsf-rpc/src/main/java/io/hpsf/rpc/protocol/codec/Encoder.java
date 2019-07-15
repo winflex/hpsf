@@ -3,6 +3,7 @@ package io.hpsf.rpc.protocol.codec;
 import java.io.ByteArrayOutputStream;
 
 import io.hpsf.rpc.protocol.RpcMessage;
+import io.hpsf.rpc.protocol.SyncMessage;
 import io.hpsf.serialization.api.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -35,11 +36,16 @@ public class Encoder extends MessageToByteEncoder<RpcMessage<?>> {
 		if (data == null) {
 			out.writeInt(0);
 		} else {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream(256);
-			serializer.serialize(data, baos);
-			byte[] bytes = baos.toByteArray();
-			out.writeInt(bytes.length);
-			out.writeBytes(bytes);
+			if (msg.getType() == RpcMessage.TYPE_SYNC) {
+				// SyncMessage直接手动编码
+				((SyncMessage) msg).encode(out);
+			} else {
+				ByteArrayOutputStream baos = new ByteArrayOutputStream(256);
+				serializer.serialize(data, baos);
+				byte[] bytes = baos.toByteArray();
+				out.writeInt(bytes.length);
+				out.writeBytes(bytes);
+			}
 		}
 	}
 }

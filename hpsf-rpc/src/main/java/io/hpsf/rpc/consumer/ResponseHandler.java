@@ -1,12 +1,18 @@
 package io.hpsf.rpc.consumer;
 
+import static io.hpsf.rpc.consumer.RpcClient.HN_RESPONSE_HANDLER;
+
 import java.util.concurrent.TimeUnit;
 
+import io.hpsf.common.ExtensionLoader;
 import io.hpsf.rpc.RpcResult;
 import io.hpsf.rpc.protocol.HeartbeatMessage;
 import io.hpsf.rpc.protocol.RpcMessage;
 import io.hpsf.rpc.protocol.RpcResponse;
 import io.hpsf.rpc.protocol.SyncMessage;
+import io.hpsf.rpc.protocol.codec.Decoder;
+import io.hpsf.rpc.protocol.codec.Encoder;
+import io.hpsf.serialization.api.Serializer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -35,7 +41,12 @@ public class ResponseHandler extends SimpleChannelInboundHandler<RpcMessage<?>> 
 		} else if (resp instanceof SyncMessage) {
 			log.debug("Recieved initialize message on channel({})", ctx.channel());
 			SyncMessage msg = (SyncMessage) resp;
-			ctx.channel().pipeline().addFirst(new IdleStateHandler(0, 0, msg.getData().getHeartbeatIntervalMillis(), TimeUnit.MILLISECONDS));
+			ctx.channel().pipeline().addFirst(new IdleStateHandler(0, 0, msg.getHeartbeatInterval(), TimeUnit.MILLISECONDS));
+			Serializer serializer = ExtensionLoader.getLoader(Serializer.class)
+					.getExtension(msg.getSerializer());
+			System.out.println("aa");
+			ctx.pipeline().addBefore(HN_RESPONSE_HANDLER, "DECODER", new Decoder(serializer));
+			ctx.pipeline().addBefore(HN_RESPONSE_HANDLER, "ENCODER", new Encoder(serializer));
 		} else {
 			log.warn("Recieved unexpected message(type={}) on channel({})", resp.getType(), ctx.channel());
 		}

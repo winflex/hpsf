@@ -17,7 +17,6 @@ import io.hpsf.rpc.protocol.HeartbeatMessage;
 import io.hpsf.rpc.protocol.RpcMessage;
 import io.hpsf.rpc.protocol.RpcRequest;
 import io.hpsf.rpc.protocol.RpcResponse;
-import io.hpsf.rpc.protocol.ServerInfo;
 import io.hpsf.rpc.protocol.SyncMessage;
 import io.hpsf.serialization.api.Serializer;
 import io.netty.buffer.ByteBuf;
@@ -65,24 +64,28 @@ public class Decoder extends ByteToMessageDecoder {
 			in.readBytes(dataBytes = new byte[dataLength]);
 		}
 		
-		Object data = dataBytes;
-		if (dataBytes != null && dataBytes.length > 0) {
-			data = serializer.deserialize(new ByteArrayInputStream(dataBytes));
-		}
-		if (type == TYPE_INVOKE_REQUEST) {
-			out.add(new RpcRequest(id, (Invocation) data));
-		} else if (type == TYPE_INVOKE_RESPONSE) {
-			out.add(new RpcResponse(id, (RpcResult) data));
-		} else if (type == TYPE_HEARTBEAT) {
-			out.add(new HeartbeatMessage());
-		} else if (type == TYPE_SYNC) {
-			out.add(new SyncMessage((ServerInfo) data));
+		if (type == TYPE_SYNC) {
+			SyncMessage syncMessage = new SyncMessage();
+			syncMessage.decode(in);
+			out.add(syncMessage);
 		} else {
-			RpcMessage<Object> rawMessage = new RpcMessage<>();
-			rawMessage.setType(type);
-			rawMessage.setId(id);
-			rawMessage.setData(data);
-			out.add(rawMessage);
+			Object data = dataBytes;
+			if (dataBytes != null && dataBytes.length > 0) {
+				data = serializer.deserialize(new ByteArrayInputStream(dataBytes));
+			}
+			if (type == TYPE_INVOKE_REQUEST) {
+				out.add(new RpcRequest(id, (Invocation) data));
+			} else if (type == TYPE_INVOKE_RESPONSE) {
+				out.add(new RpcResponse(id, (RpcResult) data));
+			} else if (type == TYPE_HEARTBEAT) {
+				out.add(new HeartbeatMessage());
+			} else {
+				RpcMessage<Object> rawMessage = new RpcMessage<>();
+				rawMessage.setType(type);
+				rawMessage.setId(id);
+				rawMessage.setData(data);
+				out.add(rawMessage);
+			}
 		}
 	}
 }

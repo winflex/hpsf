@@ -9,7 +9,6 @@ import io.hpsf.rpc.protocol.HeartbeatMessage;
 import io.hpsf.rpc.protocol.RpcMessage;
 import io.hpsf.rpc.protocol.RpcRequest;
 import io.hpsf.rpc.protocol.RpcResponse;
-import io.hpsf.rpc.protocol.ServerInfo;
 import io.hpsf.rpc.protocol.SyncMessage;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -50,9 +49,10 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
 		// 客户端连接后, 回写一个信息同步报文, 携带一些信息, 如心跳间隔等
-		ServerInfo info = new ServerInfo();
-		info.setHeartbeatIntervalMillis(rpcServer.getConfig().getHeartbeatInterval());
-		ctx.writeAndFlush(new SyncMessage(info));
+		SyncMessage syncMessage = new SyncMessage();
+		syncMessage.setHeartbeatInterval(rpcServer.getConfig().getHeartbeatInterval());
+		syncMessage.setSerializer(rpcServer.getConfig().getSerializer());
+		ctx.writeAndFlush(syncMessage);
 	}
 
 	@Override

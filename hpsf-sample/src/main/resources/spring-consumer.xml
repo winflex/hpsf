@@ -12,8 +12,8 @@
 	<hpsf:client registry="zookeeper://127.0.0.1:2181" />
 
 	<!-- 接口调用代理 -->
-	<hpsf:reference interface="io.hpsf.sample.api.AddService" version="1.0" />
+	<hpsf:reference id="addService" interface="io.hpsf.sample.api.AddService" version="1.0" />
 
 	<!-- 泛化调用代理 -->
-	<hpsf:reference interface="io.hpsf.sample.api.AddService" version="1.0" generic="true" />
+	<hpsf:reference id="genericService" interface="io.hpsf.sample.api.AddService" version="1.0" generic="true" />
 </beans>

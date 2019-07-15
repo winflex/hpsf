@@ -17,10 +17,9 @@ public class SpringConsumer {
 		System.out.println("invoke result: " + result);
 
 		GenericService genericService = (GenericService) ctx.getBean("genericService");
-		int genericResult = (int) genericService.$invoke("add", new Class<?>[] { int.class, int.class },
-				new Object[] { 1, 2 });
-
+		int genericResult = (int) genericService.$invoke("add", new Class<?>[] { int.class, int.class }, new Object[] { 1, 2 });
 		System.out.println("genertic invoke result: " + genericResult);
+		
 		ctx.close();
 	}
 }

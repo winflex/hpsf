@@ -17,9 +17,6 @@ import io.hpsf.rpc.RpcException;
 import io.hpsf.rpc.consumer.balance.LoadBalancerManager;
 import io.hpsf.rpc.consumer.proxy.DefaultProxyFactory;
 import io.hpsf.rpc.protocol.RpcRequest;
-import io.hpsf.rpc.protocol.codec.Decoder;
-import io.hpsf.rpc.protocol.codec.Encoder;
-import io.hpsf.serialization.api.Serializer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -44,6 +41,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RpcClient {
 
+	public static final String HN_RESPONSE_HANDLER = "RESPONSE_HANDLER";
+	
 	private final RpcClientConfig config; 
 	private EventLoopGroup workerGroup; // effectively finaled
 	private final ChannelManager channelManager;
@@ -86,12 +85,13 @@ public class RpcClient {
 				});
 
 				ChannelPipeline pl = ch.pipeline();
-				Serializer serializer = ExtensionLoader.getLoader(Serializer.class)
-						.getExtension(config.getSerializer());
+//				Serializer serializer = ExtensionLoader.getLoader(Serializer.class)
+//						.getExtension(config.getSerializer());
 				pl.addLast(new FlushConsolidationHandler(256, true));
-				pl.addLast(new Decoder(serializer));
-				pl.addLast(new Encoder(serializer));
-				pl.addLast(new ResponseHandler());
+				// 编解码器在收到SyncMessage后动态添加
+//				pl.addLast(new Decoder(serializer));
+//				pl.addLast(new Encoder(serializer));
+				pl.addLast(HN_RESPONSE_HANDLER, new ResponseHandler());
 			}
 		});
 		return b;
