@@ -3,7 +3,8 @@ package io.hpsf.rpc.protocol.codec;
 import static io.hpsf.rpc.protocol.RpcMessage.TYPE_HEARTBEAT;
 import static io.hpsf.rpc.protocol.RpcMessage.TYPE_INVOKE_REQUEST;
 import static io.hpsf.rpc.protocol.RpcMessage.TYPE_INVOKE_RESPONSE;
-import static io.hpsf.rpc.protocol.RpcMessage.TYPE_SYNC;
+import static io.hpsf.rpc.protocol.RpcMessage.TYPE_HANDSHAKE_REQUEST;
+import static io.hpsf.rpc.protocol.RpcMessage.TYPE_HANDSHAKE_RESPONSE;
 import static io.hpsf.rpc.protocol.codec.CodecConstants.BODY_LENGTH_OFFSET;
 import static io.hpsf.rpc.protocol.codec.CodecConstants.HEADER_LENGTH;
 import static io.hpsf.rpc.protocol.codec.CodecConstants.MAGIC;
@@ -17,7 +18,8 @@ import io.hpsf.rpc.protocol.HeartbeatMessage;
 import io.hpsf.rpc.protocol.RpcMessage;
 import io.hpsf.rpc.protocol.RpcRequest;
 import io.hpsf.rpc.protocol.RpcResponse;
-import io.hpsf.rpc.protocol.SyncMessage;
+import io.hpsf.rpc.protocol.HandshakeRequest;
+import io.hpsf.rpc.protocol.HandshakeResponse;
 import io.hpsf.serialization.api.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -37,8 +39,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Decoder extends ByteToMessageDecoder {
 
-	private final Serializer serializer;
+	private Serializer serializer;
 	
+	public Decoder() {
+	}
+
 	public Decoder(Serializer serializer) {
 		this.serializer = serializer;
 	}
@@ -50,12 +55,12 @@ public class Decoder extends ByteToMessageDecoder {
 		if (readableBytes < HEADER_LENGTH || readableBytes < (HEADER_LENGTH + in.getInt(BODY_LENGTH_OFFSET))) {
 			return;
 		}
-		
+
 		if (in.readShort() != MAGIC) {
 			log.error("Recieved an unknown packet, the channel({}) will be closed", ctx.channel());
 			return;
 		}
-		
+
 		byte type = in.readByte();
 		long id = in.readLong();
 		int dataLength = in.readInt();
@@ -63,13 +68,16 @@ public class Decoder extends ByteToMessageDecoder {
 		if (dataLength > 0) {
 			in.readBytes(dataBytes = new byte[dataLength]);
 		}
-		
-		if (type == TYPE_SYNC) {
-			SyncMessage syncMessage = new SyncMessage();
-			syncMessage.decode(in);
-			out.add(syncMessage);
+		if (type == TYPE_HANDSHAKE_REQUEST) {
+			HandshakeRequest req = new HandshakeRequest();
+			req.decode(dataBytes);
+			out.add(req);
+		} else if (type == TYPE_HANDSHAKE_RESPONSE) {
+			HandshakeResponse resp = new HandshakeResponse();
+			resp.decode(dataBytes);
+			out.add(resp);
 		} else {
-			Object data = dataBytes;
+			Object data = null;
 			if (dataBytes != null && dataBytes.length > 0) {
 				data = serializer.deserialize(new ByteArrayInputStream(dataBytes));
 			}
@@ -87,5 +95,9 @@ public class Decoder extends ByteToMessageDecoder {
 				out.add(rawMessage);
 			}
 		}
+	}
+
+	public final void setSerializer(Serializer serializer) {
+		this.serializer = serializer;
 	}
 }

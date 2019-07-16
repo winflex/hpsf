@@ -5,11 +5,12 @@ import static io.hpsf.common.util.NettyUtils.writeAndFlush;
 import io.hpsf.rpc.Invocation;
 import io.hpsf.rpc.Invoker;
 import io.hpsf.rpc.RpcResult;
+import io.hpsf.rpc.protocol.HandshakeRequest;
+import io.hpsf.rpc.protocol.HandshakeResponse;
 import io.hpsf.rpc.protocol.HeartbeatMessage;
 import io.hpsf.rpc.protocol.RpcMessage;
 import io.hpsf.rpc.protocol.RpcRequest;
 import io.hpsf.rpc.protocol.RpcResponse;
-import io.hpsf.rpc.protocol.SyncMessage;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -27,6 +28,8 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 
 	private final RpcServer rpcServer;
 
+	private boolean handshaked;
+	
 	public RequestHandler(RpcServer rpcServer) {
 		super();
 		this.rpcServer = rpcServer;
@@ -40,19 +43,32 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 		} else if (req instanceof HeartbeatMessage) {
 			// 心跳
 			handleHeartbeat(ctx, (HeartbeatMessage) req);
+		} else if (req instanceof HandshakeResponse) {
+			// 握手响应
+			handleHandshakeResponse(ctx, (HandshakeResponse) req);
 		} else {
 			log.warn("Recieved unexpected message(type={}) on channel({})", req.getType(), ctx.channel());
 			ctx.close();
 		}
 	}
 
+	private void handleHandshakeResponse(ChannelHandlerContext ctx, HandshakeResponse resp) {
+		log.debug("Recieved handshake response message on channel({})", ctx.channel());
+		if (resp.isSuccess()) {
+			handshaked = true;
+		} else {
+			log.error("Handshake failed, channel {} will be closed", ctx.channel());
+			ctx.close();
+		}
+	}
+
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
-		// 客户端连接后, 回写一个信息同步报文, 携带一些信息, 如心跳间隔等
-		SyncMessage syncMessage = new SyncMessage();
-		syncMessage.setHeartbeatInterval(rpcServer.getConfig().getHeartbeatInterval());
-		syncMessage.setSerializer(rpcServer.getConfig().getSerializer());
-		ctx.writeAndFlush(syncMessage);
+		// 客户端连接后, 回写一个握手报文, 携带一些信息, 如心跳间隔等
+		HandshakeRequest handshake = new HandshakeRequest();
+		handshake.setHeartbeatInterval(rpcServer.getConfig().getHeartbeatInterval());
+		handshake.setSerializer(rpcServer.getConfig().getSerializer());
+		writeAndFlush(ctx.channel(), handshake);
 	}
 
 	@Override
@@ -69,8 +85,14 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 	}
 
 	private void handleInvocation(ChannelHandlerContext ctx, RpcRequest req) {
-		log.debug("Recieved request message on channel({})", ctx.channel());
-		rpcServer.getExecutor().execute(new InvocationTask(ctx.channel(), req));
+		if (handshaked) {
+			log.debug("Recieved request message on channel({})", ctx.channel());
+			rpcServer.getExecutor().execute(new InvocationTask(ctx.channel(), req));
+		} else {
+			Exception e = new Exception("Not yet handshaked");
+			log.error("{}", e);
+			replyWithException(ctx.channel(), req.getId(), e);
+		}
 	}
 
 	/**

@@ -1,9 +1,12 @@
 package io.hpsf.rpc.protocol.codec;
+import static io.hpsf.rpc.protocol.RpcMessage.TYPE_HANDSHAKE_REQUEST;
+import static io.hpsf.rpc.protocol.RpcMessage.TYPE_HANDSHAKE_RESPONSE;
 
 import java.io.ByteArrayOutputStream;
 
+import io.hpsf.rpc.protocol.HandshakeRequest;
+import io.hpsf.rpc.protocol.HandshakeResponse;
 import io.hpsf.rpc.protocol.RpcMessage;
-import io.hpsf.rpc.protocol.SyncMessage;
 import io.hpsf.serialization.api.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -20,7 +23,10 @@ import io.netty.handler.codec.MessageToByteEncoder;
  */
 public class Encoder extends MessageToByteEncoder<RpcMessage<?>> {
 
-	private final Serializer serializer;
+	private Serializer serializer;
+
+	public Encoder() {
+	}
 
 	public Encoder(Serializer serializer) {
 		this.serializer = serializer;
@@ -32,20 +38,28 @@ public class Encoder extends MessageToByteEncoder<RpcMessage<?>> {
 		out.writeByte(msg.getType());
 		out.writeLong(msg.getId());
 
-		Object data = msg.getData();
-		if (data == null) {
-			out.writeInt(0);
+		if (msg.getType() == TYPE_HANDSHAKE_REQUEST) {
+			byte[] data = ((HandshakeRequest) msg).encode();
+			out.writeInt(data.length);
+			out.writeBytes(data);
+		} else if (msg.getType() == TYPE_HANDSHAKE_RESPONSE) {
+			byte[] data = ((HandshakeResponse) msg).encode();
+			out.writeInt(data.length);
+			out.writeBytes(data);
 		} else {
-			if (msg.getType() == RpcMessage.TYPE_SYNC) {
-				// SyncMessage直接手动编码
-				((SyncMessage) msg).encode(out);
+			if (msg.getData() == null) {
+				out.writeInt(0);
 			} else {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream(256);
-				serializer.serialize(data, baos);
+				serializer.serialize(msg.getData(), baos);
 				byte[] bytes = baos.toByteArray();
 				out.writeInt(bytes.length);
 				out.writeBytes(bytes);
 			}
 		}
+	}
+
+	public final void setSerializer(Serializer serializer) {
+		this.serializer = serializer;
 	}
 }

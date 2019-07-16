@@ -3,6 +3,7 @@
  */
 package io.hpsf.rpc.consumer;
 
+import static io.hpsf.common.util.NettyUtils.writeAndFlush;
 import static io.hpsf.common.util.ExceptionUtils.throwException;
 
 import io.hpsf.common.ExtensionLoader;
@@ -17,6 +18,8 @@ import io.hpsf.rpc.RpcException;
 import io.hpsf.rpc.consumer.balance.LoadBalancerManager;
 import io.hpsf.rpc.consumer.proxy.DefaultProxyFactory;
 import io.hpsf.rpc.protocol.RpcRequest;
+import io.hpsf.rpc.protocol.codec.Decoder;
+import io.hpsf.rpc.protocol.codec.Encoder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -42,6 +45,8 @@ import lombok.extern.slf4j.Slf4j;
 public class RpcClient {
 
 	public static final String HN_RESPONSE_HANDLER = "RESPONSE_HANDLER";
+	public static final String HN_ENCODER_HANDLER = "ENCODER_HANDLER";
+	public static final String HN_DECODER_HANDLER = "DECODER_HANDLER";
 	
 	private final RpcClientConfig config; 
 	private EventLoopGroup workerGroup; // effectively finaled
@@ -85,12 +90,9 @@ public class RpcClient {
 				});
 
 				ChannelPipeline pl = ch.pipeline();
-//				Serializer serializer = ExtensionLoader.getLoader(Serializer.class)
-//						.getExtension(config.getSerializer());
 				pl.addLast(new FlushConsolidationHandler(256, true));
-				// 编解码器在收到SyncMessage后动态添加
-//				pl.addLast(new Decoder(serializer));
-//				pl.addLast(new Encoder(serializer));
+				pl.addLast(HN_DECODER_HANDLER, new Decoder());
+				pl.addLast(HN_ENCODER_HANDLER, new Encoder());
 				pl.addLast(HN_RESPONSE_HANDLER, new ResponseHandler());
 			}
 		});
@@ -112,14 +114,13 @@ public class RpcClient {
 		final ResponseFuture future = new ResponseFuture(requestId, config.getRequestTimeoutMillis());
 		try {
 			ServiceMeta serviceMeta = new ServiceMeta(inv.getClassName(), inv.getVersion());
-			Registration registration = loadBalancerManager.getLoadBalancer(serviceMeta)
-					.select(registry.lookup(serviceMeta));
+			Registration registration = loadBalancerManager.getLoadBalancer(serviceMeta).select(registry.lookup(serviceMeta));
 			if (registration == null) {
 				throwException(new RpcException(
 						String.format("No providers found for %s-%s", inv.getClassName(), inv.getVersion())));
 			}
 			Channel channel = channelManager.getChannel(registration.getEndpoint(), config.getConnectTimeoutMillis());
-			channel.writeAndFlush(request).addListener((f) -> {
+			writeAndFlush(channel, request).addListener((f) -> {
 				if (!f.isSuccess()) {
 					ResponseFuture.doneWithException(requestId, f.cause());
 				}

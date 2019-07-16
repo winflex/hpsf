@@ -12,7 +12,11 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 
+import io.hpsf.common.concurrent.DefaultPromise;
+import io.hpsf.common.concurrent.Future;
+import io.hpsf.common.concurrent.FutureListener;
 import io.hpsf.common.concurrent.NamedThreadFactory;
+import io.hpsf.rpc.protocol.HandshakeResponse;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -44,13 +48,13 @@ public class ChannelBag {
 		this.channelCount = channelCount;
 		this.bootstrap = bootstrap;
 		this.healthChecker = healthChecker;
-		ChannelFuture future = bootstrap.connect().syncUninterruptibly();
+		Future<Channel> future = connect().awaitUninterruptibly();
 		if (future.isSuccess()) {
-			channels.add(future.channel());
+			channels.add(future.getNow());
 		} else {
 			throw new IOException(future.cause());
 		}
-		houseKeepingExecutor.scheduleWithFixedDelay(() -> keepHouse(), 100, 100, TimeUnit.MILLISECONDS);
+		houseKeepingExecutor.scheduleWithFixedDelay(() -> keepHouse(), 500, 100, TimeUnit.MILLISECONDS);
 	}
 
 	public Channel getChannel(int timeoutMillis) throws TimeoutException {
@@ -76,6 +80,30 @@ public class ChannelBag {
 
 		throw new TimeoutException("get channel timed out after " + elapsedMillis(start));
 	}
+	
+	Future<Channel> connect() {
+		final DefaultPromise<Channel> promise = new DefaultPromise<>();
+		bootstrap.connect().addListener(new ChannelFutureListener() {
+
+			@Override
+			public void operationComplete(ChannelFuture future) throws Exception {
+				if (future.isSuccess()) {
+					future.channel().attr(ResponseHandler.ATTR_HANDSHAKE).get().addListener(new FutureListener<Future<HandshakeResponse>>() {
+
+						@Override
+						public void operationCompleted(Future<HandshakeResponse> f) throws Exception {
+							if (f.getNow().isSuccess()) {
+								promise.setSuccess(future.channel());
+							}
+						}
+					});
+				} else {
+					log.error(future.cause().getMessage(), future.cause());
+				}
+			}
+		});
+		return promise;
+	}
 
 	private void keepHouse() {
 		// 清除不可用连接
@@ -87,16 +115,11 @@ public class ChannelBag {
 		// 维持指定连接数
 		int count = this.channelCount - channels.size();
 		for (int i = 0; i < count; i++) {
-			bootstrap.connect().addListener(new ChannelFutureListener() {
+			connect().addListener(new FutureListener<Future<Channel>>() {
 
 				@Override
-				public void operationComplete(ChannelFuture future) throws Exception {
-					if (future.isSuccess()) {
-						// TODO 优化:这个add操作可以让housekeeper线程来做
-						channels.add(future.channel());
-					} else {
-						log.error(future.cause().getMessage(), future.cause());
-					}
+				public void operationCompleted(Future<Channel> future) throws Exception {
+					channels.add(future.getNow());
 				}
 			});
 		}
