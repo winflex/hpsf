@@ -3,8 +3,6 @@ package io.hpsf.rpc.provider;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import io.hpsf.common.Endpoint;
@@ -51,7 +49,6 @@ public class RpcServer {
 
 	private final RpcServerConfig config;
 
-	private final ThreadPoolExecutor executor;
 	private final Registry registry;
 
 	private EventLoopGroup bossGroup;
@@ -65,10 +62,6 @@ public class RpcServer {
 
 	public RpcServer(RpcServerConfig config) throws RpcException {
 		this.config = config;
-		this.executor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors() * 2,
-				Runtime.getRuntime().availableProcessors() * 2, 1, TimeUnit.MINUTES,
-				new LinkedBlockingQueue<Runnable>(), new NamedThreadFactory("hpsf-service-worker"));
-
 		this.registry = createAndInitRegistry();
 		startAcceptor(config);
 	}
@@ -87,7 +80,7 @@ public class RpcServer {
 	private void startAcceptor(RpcServerConfig config) throws RpcException {
 		ServerBootstrap b = new ServerBootstrap();
 		if (Epoll.isAvailable()) {
-			log.info("using epoll feature");
+			log.debug("Using epoll feature");
 			bossGroup = new EpollEventLoopGroup(1, new NamedThreadFactory("hpsf-rpc-acceptor"));
 			workerGroup = new EpollEventLoopGroup(config.getIoThreads(), new NamedThreadFactory("hpsf-rpc-worker"));
 			b.channel(EpollServerSocketChannel.class);
@@ -157,7 +150,7 @@ public class RpcServer {
 		}
 		// 在注册中心上线
 		registry.register(new Registration(new Endpoint(config.getIp(), config.getPort()), meta));
-		log.info("published service {}-{} {}", iface.getName(), serviceVersion, serviceInstance);
+		log.info("Published service {}-{} {}", iface.getName(), serviceVersion, serviceInstance);
 	}
 
 	/**
@@ -170,7 +163,7 @@ public class RpcServer {
 		registry.unregister(new Registration(new Endpoint(config.getIp(), config.getPort()), meta));
 		// 本地下线
 		publishments.remove(meta.directoryString());
-		log.info("unpublished service {}-{} {}", iface.getName(), serviceVersion, serviceInstance);
+		log.info("Unpublished service {}-{} {}", iface.getName(), serviceVersion, serviceInstance);
 	}
 
 	/**
@@ -184,14 +177,9 @@ public class RpcServer {
 		serverChannel.close();
 		bossGroup.shutdownGracefully();
 		workerGroup.shutdownGracefully();
-		executor.shutdownNow();
 		registry.close();
 		log.info("Rpc server closed");
 		closeFuture.setSuccess(null);
-	}
-
-	public final Executor getExecutor() {
-		return executor;
 	}
 
 	public final RpcServerConfig getConfig() {

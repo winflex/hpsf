@@ -2,8 +2,10 @@ package io.hpsf.rpc.provider;
 
 import static io.hpsf.common.util.NettyUtils.writeAndFlush;
 
+import io.hpsf.registry.api.ServiceMeta;
 import io.hpsf.rpc.Invocation;
 import io.hpsf.rpc.Invoker;
+import io.hpsf.rpc.RpcException;
 import io.hpsf.rpc.RpcResult;
 import io.hpsf.rpc.protocol.HandshakeRequest;
 import io.hpsf.rpc.protocol.HandshakeResponse;
@@ -87,11 +89,19 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 	private void handleInvocation(ChannelHandlerContext ctx, RpcRequest req) {
 		if (handshaked) {
 			log.debug("Recieved request message on channel({})", ctx.channel());
-			rpcServer.getExecutor().execute(new InvocationTask(ctx.channel(), req));
+			Invocation inv = req.getData();
+			ServiceMeta meta = new ServiceMeta(inv.getClassName(), inv.getVersion());
+			Publishment publishment = rpcServer.lookup(meta);
+			if (publishment == null) {
+				RpcException e = new RpcException(meta.directoryString() + " is not published");
+				replyWithException(ctx.channel(), req.getId(), e);
+				log.error("{}", e);
+			} else {
+				publishment.getExecutor().execute(new InvocationTask(ctx.channel(), req));
+			}
 		} else {
-			Exception e = new Exception("Not yet handshaked");
-			log.error("{}", e);
-			replyWithException(ctx.channel(), req.getId(), e);
+			log.error("Channel({}) not yet handshaked", ctx.channel());
+			replyWithException(ctx.channel(), req.getId(), new Exception("Not yet handshaked"));
 		}
 	}
 

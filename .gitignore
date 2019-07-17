@@ -12,3 +12,5 @@ target
 .gz
 .zip
 *.jar
+
+*.out

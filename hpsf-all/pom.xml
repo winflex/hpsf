@@ -54,6 +54,11 @@
 			<artifactId>hpsf-serialization-kryo</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>hpsf-serialization-protostuff</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		
 		<dependency>
 			<groupId>${project.groupId}</groupId>

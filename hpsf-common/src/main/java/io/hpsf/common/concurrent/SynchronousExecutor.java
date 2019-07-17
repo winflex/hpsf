@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.concurrent.Executor;
 
 /**
- * 
+ * 当前线程执行
  *
  * @author winflex
  */

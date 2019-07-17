@@ -27,7 +27,7 @@ public class ServerInvoker<T> implements Invoker<T> {
 		ServiceMeta meta = new ServiceMeta(inv.getClassName(), inv.getVersion());
 		Publishment publishment = rpcServer.lookup(meta);
 		if (publishment == null) {
-			throw new RpcException(inv.getClassName() + " is not published");
+			throw new RpcException(meta.directoryString() + " is not published");
 		}
 		
 		Object instance = publishment.getServiceInstance(); // the service instance

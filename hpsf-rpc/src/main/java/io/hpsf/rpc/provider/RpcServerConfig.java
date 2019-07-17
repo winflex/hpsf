@@ -19,7 +19,7 @@ public class RpcServerConfig {
 	public static final int DEFAULT_PORT = 9999;
 	public static final int DEFAULT_IO_THREADS = 0;
 	public static final int DEFAULT_HEARTBEAT_INTERVAL = 10000;
-	public static final String DEFAULT_SERIALIZER = "hessian";
+	public static final String DEFAULT_SERIALIZER = "protostuff";
 	
 	@Builder.Default
 	private int port = DEFAULT_PORT;
