@@ -1,6 +1,8 @@
 package io.hpsf.rpc.provider;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 import io.hpsf.common.config.Config;
@@ -10,11 +12,20 @@ import io.hpsf.common.config.PropertiesConfig;
  * 
  * @author winflex
  */
-public class ClassPathPropertiesRpcServerConfig extends RpcServerConfig {
+public class PropertiesRpcServerConfig extends RpcServerConfig {
 
-	public ClassPathPropertiesRpcServerConfig(String file) throws IOException {
+	private static final String CLASSPATH_PREFIX = "classpath:";
+	
+	public PropertiesRpcServerConfig(String file) throws IOException {
+		file = file.trim();
+		InputStream in;
+		if (file.startsWith(CLASSPATH_PREFIX)) {
+			in = getClass().getResourceAsStream(file.substring(CLASSPATH_PREFIX.length()));
+		} else {
+			in = new FileInputStream(file);
+		}
 		Properties p = new Properties();
-		p.load(getClass().getClassLoader().getResourceAsStream(file));
+		p.load(in);
 		load(new PropertiesConfig(p));
 	}
 

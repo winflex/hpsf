@@ -8,7 +8,7 @@ import io.hpsf.spring.bean.parser.HpsfServerBeanParser;
 import io.hpsf.spring.bean.parser.HpsfServiceBeanParser;
 
 /**
- * 定义标签与bean解析器的映射关系
+ * 定义xml标签与bean解析器的映射关系
  * 
  * @author winflex
  */

@@ -55,10 +55,6 @@ public class RpcClient {
 	private final Registry registry;
 	private final LoadBalancerManager loadBalancerManager = new LoadBalancerManager();
 
-	public RpcClient() throws Exception {
-		this(new RpcClientConfig());
-	}
-
 	public RpcClient(RpcClientConfig config) throws Exception {
 		this.config = config;
 		this.channelManager = new ChannelManager(createBootstrap(), config.getMaxConnectionPerServer());

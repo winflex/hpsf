@@ -10,8 +10,7 @@ import io.hpsf.rpc.consumer.RpcClientConfig;
  */
 public class Consumer {
 	public static void main(String[] args) throws Exception {
-		RpcClientConfig config = new RpcClientConfig();
-		config.setRegistry("zookeeper://127.0.0.1:2181");
+		RpcClientConfig config = RpcClientConfig.builder().registry("zookeeper://127.0.0.1:2181").build();
 		
 		RpcClient client = new RpcClient(config);
 		AddService service = client.getServiceProxy(AddService.class, "1.0");

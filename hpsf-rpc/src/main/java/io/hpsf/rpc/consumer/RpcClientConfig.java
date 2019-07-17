@@ -1,6 +1,10 @@
 package io.hpsf.rpc.consumer;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * RPC客户端配置
@@ -8,6 +12,9 @@ import lombok.Data;
  * @author winflex
  */
 @Data
+@Builder
+@NoArgsConstructor(access=AccessLevel.PROTECTED)
+@AllArgsConstructor(access=AccessLevel.PROTECTED)
 public class RpcClientConfig {
 
 	private String registry;
@@ -16,25 +23,14 @@ public class RpcClientConfig {
 	private int ioThreads;
 
 	/** 创建连接超时时间 */
+	@Builder.Default
 	private int connectTimeoutMillis = 3000;
 
 	/** 请求超时时间 */
+	@Builder.Default
 	private int requestTimeoutMillis = Integer.MAX_VALUE; // default to forever
 
 	/** 最大连接数 */
+	@Builder.Default
 	private int maxConnectionPerServer = 1;
-
-	public void setInvokeTimeoutMillis(int invokeTimeoutMillis) {
-		if (invokeTimeoutMillis <= 0) {
-			throw new IllegalArgumentException("The invokeTimeoutMillis must be positive");
-		}
-		this.requestTimeoutMillis = invokeTimeoutMillis;
-	}
-
-	public void setConnectTimeoutMillis(int connectTimeoutMillis) {
-		if (connectTimeoutMillis <= 0) {
-			throw new IllegalArgumentException("The connectTimeoutMillis must be positive");
-		}
-		this.connectTimeoutMillis = connectTimeoutMillis;
-	}
 }
