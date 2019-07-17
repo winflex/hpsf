@@ -15,5 +15,7 @@
 	<hpsf:server port="8888" registry="zookeeper://127.0.0.1:2181" />
 
 	<!-- 配置暴露的服务 -->
-	<hpsf:service ref="addServiceImpl" version="1.0" coreThreads="1" maxThreads="10" />
+	<hpsf:service ref="addServiceImpl" version="1.0">
+		<hpsf:threadPool corePoolSize="1" maxPoolSize="5" queueSize="5" threadName="aaa" keepAliveTime="10"/>
+	</hpsf:service>
 </beans>

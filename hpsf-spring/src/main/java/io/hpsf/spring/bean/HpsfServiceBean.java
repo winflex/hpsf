@@ -1,6 +1,5 @@
 package io.hpsf.spring.bean;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -19,21 +18,38 @@ public class HpsfServiceBean implements InitializingBean, DisposableBean {
 	private String id;
 	private HpsfServerBean server;
 	private Object ref;
-	private int coreThreads;
-	private int maxThreads;
 	private String version;
 	private String iface;
+
+	// thread pool configs
+	private int corePoolSize;
+	private int maxPoolSize;
+	private int queueSize;
+	private String threadName;
+	private int keepAliveTime; // in seconds
+	private boolean allowCoreThreadTimeout;
 
 	private Class<?> theInterface;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		theInterface = findInterface();
-		
-		final String threadName = (id == null || id.isEmpty()) ? ref.getClass().getSimpleName() : id;
-		if (coreThreads > 0 && maxThreads > 0 && coreThreads <= maxThreads) {
-			Executor executor = new ThreadPoolExecutor(coreThreads, maxThreads, 1, TimeUnit.MINUTES,
-					new LinkedBlockingQueue<>(), new NamedThreadFactory(threadName));
+
+		if (corePoolSize > 0 && maxPoolSize > 0 && corePoolSize <= maxPoolSize) {
+			if (threadName == null) {
+				threadName = (id == null || id.isEmpty()) ? ref.getClass().getSimpleName() : id;
+			}
+			if (queueSize <= 0) {
+				queueSize = Integer.MAX_VALUE;
+			}
+			if (keepAliveTime <= 0) {
+				keepAliveTime = 60;
+			}
+			ThreadPoolExecutor executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, TimeUnit.SECONDS,
+					new LinkedBlockingQueue<>(queueSize), new NamedThreadFactory(threadName));
+			if (allowCoreThreadTimeout) {
+				executor.allowCoreThreadTimeOut(true);
+			}
 			server.getRpcServer().publish(theInterface, ref, version, executor);
 		} else {
 			server.getRpcServer().publish(theInterface, ref, version);
@@ -77,12 +93,32 @@ public class HpsfServiceBean implements InitializingBean, DisposableBean {
 		this.id = id;
 	}
 
-	public final void setCoreThreads(int coreThreads) {
-		this.coreThreads = coreThreads;
+	public final void setCorePoolSize(int corePoolSize) {
+		this.corePoolSize = corePoolSize;
 	}
 
-	public final void setMaxThreads(int maxThreads) {
-		this.maxThreads = maxThreads;
+	public final void setMaxPoolSize(int maxPoolSize) {
+		this.maxPoolSize = maxPoolSize;
+	}
+
+	public final void setQueueSize(int queueSize) {
+		this.queueSize = queueSize;
+	}
+
+	public final void setThreadName(String threadName) {
+		this.threadName = threadName;
+	}
+
+	public final void setKeepAliveTime(int keepAlive) {
+		this.keepAliveTime = keepAlive;
+	}
+
+	public final void setAllowCoreThreadTimeout(boolean allowCoreThreadTimeout) {
+		this.allowCoreThreadTimeout = allowCoreThreadTimeout;
+	}
+
+	public final void setTheInterface(Class<?> theInterface) {
+		this.theInterface = theInterface;
 	}
 
 	public final void setIface(String iface) {

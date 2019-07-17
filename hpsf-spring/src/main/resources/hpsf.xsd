@@ -9,6 +9,11 @@
 	<xsd:import namespace="http://www.springframework.org/schema/beans" />
 	<xsd:import namespace="http://www.springframework.org/schema/tool" />
 
+	<xsd:element name="server" type="hpsfServerType" />
+	<xsd:element name="service" type="hpsfServiceType" />
+	<xsd:element name="client" type="hpsfClientType" />
+	<xsd:element name="reference" type="hpsfReferenceType" />
+
 	<xsd:complexType name="idType">
 		<xsd:attribute name="id" type="xsd:ID" use="optional">
 			<xsd:annotation>
@@ -57,6 +62,9 @@
 	<xsd:complexType name="hpsfServiceType">
 		<xsd:complexContent>
 			<xsd:extension base="idType">
+                <xsd:choice>
+                	<xsd:element name="threadPool" type="hpsdThreadPoolType" minOccurs="0" maxOccurs="1" />
+                </xsd:choice>
 				<xsd:attribute name="server" type="xsd:string" use="optional">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ RPC服务器 ]]></xsd:documentation>
@@ -70,16 +78,6 @@
 				<xsd:attribute name="version" type="xsd:string" use="required">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ 服务版本. ]]></xsd:documentation>
-                    </xsd:annotation>
-                </xsd:attribute>
-				<xsd:attribute name="coreThreads" type="xsd:int" use="optional">
-                    <xsd:annotation>
-                        <xsd:documentation><![CDATA[ 服务的核心线程数. ]]></xsd:documentation>
-                    </xsd:annotation>
-                </xsd:attribute>
-				<xsd:attribute name="maxThreads" type="xsd:int" use="optional">
-                    <xsd:annotation>
-                        <xsd:documentation><![CDATA[ 服务的最大线程数. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
 				<xsd:attribute name="interface" type="xsd:string" use="optional">
@@ -154,10 +152,32 @@
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
-
-	<xsd:element name="server" type="hpsfServerType" />
-	<xsd:element name="service" type="hpsfServiceType" />
-	<xsd:element name="client" type="hpsfClientType" />
-	<xsd:element name="reference" type="hpsfReferenceType" />
 	
+	<xsd:complexType name="hpsdThreadPoolType">
+		<xsd:attribute name="corePoolSize" type="xsd:int" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ 核心线程数. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="maxPoolSize" type="xsd:int" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ 最大线程数. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="queueSize" type="xsd:int" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ 队列大小. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="keepAliveTime" type="xsd:int" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ 线程空闲超时时间, 单位秒. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="threadName" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ 线程名字前缀, 默认为服务Bean的ID. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
 </xsd:schema>
