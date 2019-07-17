@@ -134,14 +134,21 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcMessage<?>> {
 
 		@Override
 		public void run() {
+			Invocation inv = request.getData();
+			Class<?> clazz = null;
 			try {
-				Invocation inv = request.getData();
-				Class<?> clazz = Class.forName(inv.getClassName());
-				Invoker<?> invoker = new ServerInvoker<>(clazz, rpcServer);
+				clazz = Class.forName(inv.getClassName());
+			} catch (Throwable e) {
+				log.error("Invocation({}) on channel({}) failed, cause: {}", request.getData(), ch, e.getMessage());
+				replyWithException(ch, request.getId(), e);
+				return;
+			}
+
+			Invoker<?> invoker = new ServerInvoker<>(clazz, rpcServer);
+			try {
 				Object result = invoker.invoke(inv);
 				replyWithResult(ch, request.getId(), result);
 			} catch (Throwable e) {
-				log.error("Invocation({}) on channel({}) failed, cause: {}", request.getData(), ch, e.getMessage());
 				replyWithException(ch, request.getId(), e);
 			}
 		}
