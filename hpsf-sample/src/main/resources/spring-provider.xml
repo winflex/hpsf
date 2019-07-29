@@ -16,6 +16,7 @@
 
 	<!-- 配置暴露的服务 -->
 	<hpsf:service ref="addServiceImpl" version="1.0">
-		<hpsf:threadPool corePoolSize="1" maxPoolSize="5" queueSize="5" threadName="aaa" keepAliveTime="10"/>
+		<!-- 该服务独享的线程池配置(可选) -->
+		<hpsf:threadPool corePoolSize="1" maxPoolSize="1" queueSize="5" threadName="AddServiceWorker" keepAliveTime="10" allowCoreThreadTimeout="false"/>
 	</hpsf:service>
 </beans>

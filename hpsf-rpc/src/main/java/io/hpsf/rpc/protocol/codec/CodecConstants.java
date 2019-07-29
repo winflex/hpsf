@@ -4,7 +4,7 @@ package io.hpsf.rpc.protocol.codec;
  * 
  * @author winflex
  */
-public interface CodecConstants {
+interface CodecConstants {
 	
 	int HEADER_LENGTH = 15;
 	

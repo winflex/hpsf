@@ -85,7 +85,7 @@ public class ResponseHandler extends SimpleChannelInboundHandler<RpcMessage<?>> 
 	public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
 		if (evt instanceof IdleStateEvent) {
 			log.debug("Send heartbeat message on channel({})", ctx.channel());
-			ctx.writeAndFlush(new HeartbeatMessage());
+			NettyUtils.writeAndFlush(ctx.channel(), new HeartbeatMessage());
 		}
 	}
 }
