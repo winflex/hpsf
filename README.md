@@ -148,4 +148,7 @@ public class Consumer {
 ```
 
 ## TODO List
-1. 实现eureka注册中心
+1. 支持异步接口
+2. 实现eureka注册中心
+3. 优雅实现filter机制
+4. 限流、熔断等
